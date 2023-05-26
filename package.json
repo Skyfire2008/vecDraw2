@@ -1,0 +1,17 @@
+{
+	"name": "vec_draw_2",
+	"version": "0.0.1",
+	"devDependencies": {
+		"react": "latest",
+		"react-dom": "latest",
+		"@types/react": "latest",
+		"@types/react-dom": "latest"
+	},
+	"dependencies": {
+		"react": "latest",
+		"react-dom": "latest"
+	},
+	"scripts": {
+		"compile": "tsc"
+	}
+}
