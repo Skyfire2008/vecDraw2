@@ -1,7 +1,15 @@
+interface MyMouseEvent {
+	pos: Point;
+	delta: Point;
+	ctrlHeld: boolean;
+	shiftHeld: boolean;
+	altHeld: boolean;
+}
+
 interface Tool {
-	onMouseDown(pos: Point);
-	onMouseUp(pos: Point);
-	onMouseMove(pos: Point);
-	onKeyDown(key: string);
-	onKeyUp(key: string);
+	onMouseDown(e: MyMouseEvent, ctx: AppContextProps);
+	onMouseUp(e: MyMouseEvent, ctx: AppContextProps);
+	onMouseMove(e: MyMouseEvent, ctx: AppContextProps);
+	//onKeyDown(key: string);
+	//onKeyUp(key: string);
 }

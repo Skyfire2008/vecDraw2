@@ -7,42 +7,83 @@ interface GridSettings {
 
 interface AppContextProps {
 	gridSettings: GridSettings;
+	pan: Point;
+	setPan: (pos: Point) => void;
 }
 
 const AppContext = React.createContext<AppContextProps>(null);
+const width = 1280;
+const height = 720;
 
 const VecDraw: React.FC<any> = () => {
-	const width = 1280;
-	const height = 720;
-
+	const svgRef = React.useRef<SVGSVGElement>(null);
+	const mouseStartPos = React.useRef(new Point());
+	const [pan, setPan] = React.useState(new Point());
+	const [zoom, setZoom] = React.useState(1.0);
 	const [gridSettings, setGridSettings] = React.useState<GridSettings>({
 		bgColor: "darkslateblue",
 		gridColor: "orange",
-		width: 10,
-		height: 10
+		width: 100,
+		height: 100
 	});
 	const [actions, setActions] = React.useState<Array<Action>>([]);
 	const [tool, setTool] = React.useState<Tool>(new Pan());
 
+	const ctx = { gridSettings, pan, setPan };
+
+	const convertCoords = (x: number, y: number) => {
+		const rect = svgRef.current.getBoundingClientRect();
+		return new Point(x - rect.left, y - rect.top);
+	};
+
 	const onMouseDown = (e: React.MouseEvent) => {
-		tool.onMouseDown(e.nativeEvent);
+		const coords = convertCoords(e.clientX, e.clientY);
+		mouseStartPos.current = new Point(coords.x, coords.y);
+		tool.onMouseDown({
+			pos: coords,
+			delta: new Point(),
+			ctrlHeld: e.ctrlKey,
+			shiftHeld: e.shiftKey,
+			altHeld: e.altKey
+		},
+			ctx);
 	};
 
 	const onMouseMove = (e: React.MouseEvent) => {
-		tool.onMouseDown(e.nativeEvent);
+		const coords = convertCoords(e.clientX, e.clientY);
+		tool.onMouseMove({
+			pos: coords,
+			delta: Point.subtract(coords, mouseStartPos.current),
+			ctrlHeld: e.ctrlKey,
+			shiftHeld: e.shiftKey,
+			altHeld: e.altKey
+		},
+			ctx);
 	};
 
 	const onMouseUp = (e: React.MouseEvent) => {
-		tool.onMouseUp(e.nativeEvent);
+		const coords = convertCoords(e.clientX, e.clientY);
+		tool.onMouseUp({
+			pos: coords,
+			delta: Point.subtract(coords, mouseStartPos.current),
+			ctrlHeld: e.ctrlKey,
+			shiftHeld: e.shiftKey,
+			altHeld: e.altKey
+		},
+			ctx);
 	};
+
+	/*const onKeyDown = (e: KeyboardEvent) =>{
+
+	}*/
 
 	//TODO: load settings here
 	React.useEffect(() => { }, []);
 
 	return (
 		<div>
-			<AppContext.Provider value={{ gridSettings: gridSettings }}>
-				<svg width={width} height={height} onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp}>
+			<AppContext.Provider value={ctx}>
+				<svg ref={svgRef} viewBox={`${-pan.x} ${-pan.y} ${width} ${height}`} width={width} height={height} onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp}>
 					<defs>
 						<pattern id="gridPattern" width={gridSettings.width} height={gridSettings.height} patternUnits="userSpaceOnUse">
 							<rect x={0} y={0} width={gridSettings.width} height={gridSettings.height} fill={gridSettings.bgColor}></rect>
