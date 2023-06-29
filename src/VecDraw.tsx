@@ -18,14 +18,17 @@ const height = 720;
 const VecDraw: React.FC<any> = () => {
 	const svgRef = React.useRef<SVGSVGElement>(null);
 	const mouseStartPos = React.useRef(new Point());
+
 	const [pan, setPan] = React.useState(new Point());
 	const [zoom, setZoom] = React.useState(1.0);
 	const [gridSettings, setGridSettings] = React.useState<GridSettings>({
 		bgColor: "darkslateblue",
 		gridColor: "orange",
-		width: 100,
-		height: 100
+		width: 20,
+		height: 20
 	});
+
+	const [layers, setLayers] = React.useState<Array<LayerData>>([]);
 	const [actions, setActions] = React.useState<Array<Action>>([]);
 	const [tool, setTool] = React.useState<Tool>(new Pan());
 
@@ -73,6 +76,18 @@ const VecDraw: React.FC<any> = () => {
 			ctx);
 	};
 
+	const onSelectFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const files = e.target.files;
+		if (files.length > 0) {
+			const fr = new FileReader();
+			fr.addEventListener("load", () => {
+				setLayers(loadShape(fr.result as string).layers);
+			});
+
+			fr.readAsText(files[0]);
+		}
+	};
+
 	/*const onKeyDown = (e: KeyboardEvent) =>{
 
 	}*/
@@ -83,6 +98,10 @@ const VecDraw: React.FC<any> = () => {
 	return (
 		<div>
 			<AppContext.Provider value={ctx}>
+				<div>
+					<label>Shape file:</label>
+					<input type="file" accept=".json" onChange={onSelectFile}></input>
+				</div>
 				<svg ref={svgRef} viewBox={`${-pan.x} ${-pan.y} ${width} ${height}`} width={width} height={height} onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp}>
 					<defs>
 						<pattern id="gridPattern" width={gridSettings.width} height={gridSettings.height} patternUnits="userSpaceOnUse">
@@ -92,6 +111,7 @@ const VecDraw: React.FC<any> = () => {
 						</pattern>
 					</defs>
 					<rect x={0} y={0} width={width} height={height} fill="url(#gridPattern)"></rect>
+					{layers.map((layer, i) => <Layer key={i} {...layer}></Layer>)}
 				</svg>
 			</AppContext.Provider>
 		</div>
