@@ -28,7 +28,7 @@ const loadShape = (shapeString: string): ShapeData => {
 	if (isOldFormat(json)) {
 		const points: Array<Point> = json.points.map((p) => { return { x: p.x, y: p.y } });
 		const lines: Array<Line> = json.lines.map((l) => {
-			return { from: l.from, to: l.to, thickness: 1, color: json.points[l.from].color };
+			return { from: l.from, to: l.to, thickness: 0, color: json.points[l.from].color };
 		});
 		return { ver: 1, layers: [{ points, lines }] };
 	} else {
