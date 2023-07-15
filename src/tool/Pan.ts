@@ -12,7 +12,7 @@ class Pan implements Tool {
 
 	public onMouseMove(e: MyMouseEvent, ctx: AppContextProps) {
 		if (this.active) {
-			const result = new Point(this.prevPan.x + e.delta.x / ctx.zoom, this.prevPan.y + e.delta.y / ctx.zoom);
+			const result = new Point(this.prevPan.x + e.delta.x, this.prevPan.y + e.delta.y);
 			ctx.setPan(result);
 		}
 	}

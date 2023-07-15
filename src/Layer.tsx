@@ -14,24 +14,45 @@ interface LayerData {
 
 };*/
 
+const convertCoords = (p: Point, pan: Point, zoom: number, thickness: number) => {
+	let result = Point.scale(p, zoom);
+	result.add(pan);
+	let frac = thickness / 2;
+	frac = frac - Math.floor(frac);
+	result.x = Math.floor(result.x) + frac;
+	result.y = Math.floor(result.y) + frac;
+	return result;
+};
+
 const Layer: React.FC<LayerData> = ({ lines, points }) => {
 	const ctx = React.useContext(AppContext);
+
 	return (
 		<>
-			<g>{lines.map((line, i) =>
-				<line
-					key={i}
-					strokeWidth={line.thickness != 0 ? line.thickness : 2}
-					strokeLinecap="round"
-					vectorEffect={line.thickness != 0 ? null : "non-scaling-stroke"}
-					stroke={line.color}
-					x1={points[line.from].x}
-					y1={points[line.from].y}
-					x2={points[line.to].x}
-					y2={points[line.to].y}>
-				</line>)}
+			<g>{lines.map((line, i) => {
+				const thickness = line.thickness != 0 ? line.thickness : 2;
+				const from = convertCoords(points[line.from], ctx.pan, ctx.zoom, thickness);
+				const to = convertCoords(points[line.to], ctx.pan, ctx.zoom, thickness);
+				return (
+					<line
+						key={i}
+						strokeWidth={thickness}
+						strokeLinecap="round"
+						vectorEffect={line.thickness != 0 ? null : "non-scaling-stroke"}
+						stroke={line.color}
+						x1={from.x}
+						y1={from.y}
+						x2={to.x}
+						y2={to.y}>
+					</line>
+				);
+			})}
 			</g>
-			<g>{points.map((point, i) => <use key={i} href="#pointRect" transform={`translate(${point.x}, ${point.y}), scale(${1 / ctx.zoom})`}></use>)}</g>
+			<g>{points.map((point, i) => {
+				const p = convertCoords(point, ctx.pan, ctx.zoom, 1);
+				return <use key={i} href="#pointRect" transform={`translate(${p.x}, ${p.y})`}></use>
+			})}
+			</g>
 		</>
 	);
 };

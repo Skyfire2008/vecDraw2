@@ -26,7 +26,7 @@ const isOldFormat = (data: ShapeData | OldShapeData): data is OldShapeData => {
 const loadShape = (shapeString: string): ShapeData => {
 	const json: ShapeData | OldShapeData = JSON.parse(shapeString);
 	if (isOldFormat(json)) {
-		const points: Array<Point> = json.points.map((p) => { return { x: p.x, y: p.y } });
+		const points: Array<Point> = json.points.map((p) => { return new Point(p.x, p.y) });
 		const lines: Array<Line> = json.lines.map((l) => {
 			return { from: l.from, to: l.to, thickness: 0, color: json.points[l.from].color };
 		});
