@@ -80,7 +80,7 @@ const VecDraw: React.FC<any> = () => {
 	const onWheel = (e: React.WheelEvent) => {
 		if (e.deltaY < 0) {
 			setZoom(zoom * 2);
-		} else {
+		} else if (zoom > 1) {
 			setZoom(zoom / 2);
 		}
 	}
@@ -104,6 +104,24 @@ const VecDraw: React.FC<any> = () => {
 	//TODO: load settings here
 	React.useEffect(() => { }, []);
 
+	const updateGridSettings = (value: Object) => {
+		setGridSettings(Object.assign({}, gridSettings, value));
+	};
+
+	const updateGridWidth = (value: string) => {
+		const numValue = Number.parseFloat(value);
+		if (!Number.isNaN(numValue) && numValue > 0) {
+			updateGridSettings({ width: numValue });
+		}
+	};
+
+	const updateGridHeight = (value: string) => {
+		const numValue = Number.parseFloat(value);
+		if (!Number.isNaN(numValue) && numValue > 0) {
+			updateGridSettings({ height: numValue });
+		}
+	};
+
 	return (
 		<div>
 			<AppContext.Provider value={ctx}>
@@ -120,6 +138,26 @@ const VecDraw: React.FC<any> = () => {
 					<BgRect width={width} height={height}></BgRect>
 					{layers.map((layer, i) => <Layer key={i} {...layer}></Layer>)}
 				</svg>
+				<div>
+					<label>Grid width:</label>
+					<input defaultValue={gridSettings.width} onBlur={(e) => updateGridWidth(e.target.value)} onKeyUp={
+						(e) => {
+							if (e.key === "Enter") {
+								(e.target as HTMLElement).blur();
+							}
+						}
+					}></input>
+				</div>
+				<div>
+					<label>Grid height:</label>
+					<input defaultValue={gridSettings.height} onBlur={(e) => updateGridHeight(e.target.value)} onKeyUp={
+						(e) => {
+							if (e.key === "Enter") {
+								(e.target as HTMLElement).blur();
+							}
+						}
+					}></input>
+				</div>
 			</AppContext.Provider>
 		</div>
 	);
