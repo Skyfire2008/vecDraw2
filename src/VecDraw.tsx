@@ -138,25 +138,35 @@ const VecDraw: React.FC<any> = () => {
 					<BgRect width={width} height={height}></BgRect>
 					{layers.map((layer, i) => <Layer key={i} {...layer}></Layer>)}
 				</svg>
-				<div>
-					<label>Grid width:</label>
-					<input defaultValue={gridSettings.width} onBlur={(e) => updateGridWidth(e.target.value)} onKeyUp={
-						(e) => {
-							if (e.key === "Enter") {
-								(e.target as HTMLElement).blur();
+				<div className="line">
+					<div>
+						<label>Grid width:</label>
+						<input defaultValue={gridSettings.width} onBlur={(e) => updateGridWidth(e.target.value)} onKeyUp={
+							(e) => {
+								if (e.key === "Enter") {
+									(e.target as HTMLElement).blur();
+								}
 							}
-						}
-					}></input>
-				</div>
-				<div>
-					<label>Grid height:</label>
-					<input defaultValue={gridSettings.height} onBlur={(e) => updateGridHeight(e.target.value)} onKeyUp={
-						(e) => {
-							if (e.key === "Enter") {
-								(e.target as HTMLElement).blur();
+						}></input>
+					</div>
+					<div>
+						<label>Grid height:</label>
+						<input defaultValue={gridSettings.height} onBlur={(e) => updateGridHeight(e.target.value)} onKeyUp={
+							(e) => {
+								if (e.key === "Enter") {
+									(e.target as HTMLElement).blur();
+								}
 							}
-						}
-					}></input>
+						}></input>
+					</div>
+					<div>
+						<label>Bg color:</label>
+						<input type="color" value={gridSettings.bgColor} onChange={(e) => updateGridSettings({ bgColor: e.target.value })}></input>
+					</div>
+					<div>
+						<label>Grid color:</label>
+						<input type="color" value={gridSettings.gridColor} onChange={(e) => updateGridSettings({ gridColor: e.target.value })}></input>
+					</div>
 				</div>
 			</AppContext.Provider>
 		</div>
