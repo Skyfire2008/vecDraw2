@@ -1,16 +1,21 @@
-class Point {
+interface PointLike {
+	x: number;
+	y: number;
+}
+
+class Point implements PointLike {
 	public x: number;
 	public y: number;
 
-	public static subtract(a: Point, b: Point): Point {
+	public static subtract(a: PointLike, b: PointLike): Point {
 		return new Point(a.x - b.x, a.y - b.y);
 	}
 
-	public static sum(a: Point, b: Point): Point {
+	public static sum(a: PointLike, b: PointLike): Point {
 		return new Point(a.x + b.x, a.y + b.y);
 	}
 
-	public static scale(p: Point, m: number): Point {
+	public static scale(p: PointLike, m: number): Point {
 		return new Point(p.x * m, p.y * m);
 	}
 
@@ -19,8 +24,23 @@ class Point {
 		this.y = y;
 	}
 
-	public add(other: Point) {
+	public add(other: PointLike) {
 		this.x += other.x;
 		this.y += other.y;
+	}
+
+	public sub(other: PointLike) {
+		this.x -= other.x;
+		this.y -= other.y;
+	}
+
+	public mult(other: PointLike) {
+		this.x *= other.x;
+		this.y *= other.y;
+	}
+
+	public multScalar(m: number) {
+		this.x *= m;
+		this.y *= m;
 	}
 }

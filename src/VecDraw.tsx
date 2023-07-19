@@ -129,15 +129,18 @@ const VecDraw: React.FC<any> = () => {
 					<label>Shape file:</label>
 					<input type="file" accept=".json" onChange={onSelectFile}></input>
 				</div>
-				<svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} width={width} height={height} onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onWheel={onWheel}>
-					<defs>
-						<symbol overflow="visible" id="pointRect">
-							<rect x="-4" y="-4" width="8" height="8" stroke="white" fill="none"></rect>
-						</symbol>
-					</defs>
-					<BgRect width={width} height={height}></BgRect>
-					{layers.map((layer, i) => <Layer key={i} {...layer}></Layer>)}
-				</svg>
+				<div className="line">
+					<svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} width={width} height={height} onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onWheel={onWheel}>
+						<defs>
+							<symbol overflow="visible" id="pointRect">
+								<rect x="-4" y="-4" width="8" height="8" stroke="white" fill="none"></rect>
+							</symbol>
+						</defs>
+						<BgRect width={width} height={height}></BgRect>
+						{layers.map((layer, i) => <Layer key={i} {...layer}></Layer>)}
+					</svg>
+					<Preview layers={layers} width={200} height={200}></Preview>
+				</div>
 				<div className="line">
 					<div>
 						<label>Grid width:</label>
