@@ -28,8 +28,8 @@ const VecDraw: React.FC<any> = () => {
 	const [pan, setPan] = React.useState(new Point(width / 2, height / 2));
 	const [zoom, setZoom] = React.useState(1.0);
 	const [gridSettings, setGridSettings] = React.useState<GridSettings>({
-		bgColor: "darkslateblue",
-		gridColor: "orange",
+		bgColor: "#ffffff",
+		gridColor: "#b0c4de",
 		width: 20,
 		height: 20
 	});

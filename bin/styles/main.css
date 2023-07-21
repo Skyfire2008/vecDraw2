@@ -6,3 +6,8 @@
 .point {
 	cursor: pointer;
 }
+
+.toolbox{
+    display: flex;
+    flex-direction: column;
+}
