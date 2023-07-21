@@ -1,5 +1,6 @@
 class Pan implements Tool {
 
+	readonly name = "Pan";
 	private active = false;
 	private prevPan: Point;
 

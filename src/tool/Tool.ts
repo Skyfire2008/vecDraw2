@@ -7,6 +7,7 @@ interface MyMouseEvent {
 }
 
 interface Tool {
+	name: string;
 	onMouseDown(e: MyMouseEvent, ctx: AppContextProps);
 	onMouseUp(e: MyMouseEvent, ctx: AppContextProps);
 	onMouseMove(e: MyMouseEvent, ctx: AppContextProps);

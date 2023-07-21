@@ -10,10 +10,6 @@ interface LayerData {
 	lines: Array<Line>;
 }
 
-/*const PointRect:React.FC<Point>=({x, y})=>{
-
-};*/
-
 const convertCoords = (p: Point, pan: Point, zoom: number, thickness: number) => {
 	let result = Point.scale(p, zoom);
 	result.add(pan);
@@ -48,10 +44,7 @@ const Layer: React.FC<LayerData> = ({ lines, points }) => {
 				);
 			})}
 			</g>
-			<g>{points.map((point, i) => {
-				const p = convertCoords(point, ctx.pan, ctx.zoom, 1);
-				return <use key={i} href="#pointRect" transform={`translate(${p.x}, ${p.y})`}></use>
-			})}
+			<g>{points.map((point, i) => <ControlPoint key={i} num={i} p={point}></ControlPoint>)}
 			</g>
 		</>
 	);

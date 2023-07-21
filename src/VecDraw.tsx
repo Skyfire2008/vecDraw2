@@ -10,6 +10,11 @@ interface AppContextProps {
 	pan: Point;
 	setPan: (pos: Point) => void;
 	zoom: number;
+	tool: Tool;
+	layers: Array<LayerData>;
+	activeLayer: number;
+	activePoint: number;
+	setActivePoint: (num: number) => void;
 }
 
 const AppContext = React.createContext<AppContextProps>(null);
@@ -30,10 +35,23 @@ const VecDraw: React.FC<any> = () => {
 	});
 
 	const [layers, setLayers] = React.useState<Array<LayerData>>([]);
+	const [activeLayer, setActiveLayer] = React.useState<number>(0);
+	const [activePoint, setActivePoint] = React.useState<number>(-1);
 	const [actions, setActions] = React.useState<Array<Action>>([]);
 	const [tool, setTool] = React.useState<Tool>(new Pan());
+	const tempGroupRef = React.useRef<SVGGElement>(null);
 
-	const ctx = { gridSettings, pan, setPan, zoom };
+	const ctx = {
+		gridSettings,
+		pan,
+		setPan,
+		zoom,
+		tool,
+		layers,
+		activeLayer,
+		activePoint,
+		setActivePoint
+	};
 
 	const convertCoords = (x: number, y: number) => {
 		const rect = svgRef.current.getBoundingClientRect();
@@ -131,13 +149,9 @@ const VecDraw: React.FC<any> = () => {
 				</div>
 				<div className="line">
 					<svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} width={width} height={height} onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onWheel={onWheel}>
-						<defs>
-							<symbol overflow="visible" id="pointRect">
-								<rect x="-4" y="-4" width="8" height="8" stroke="white" fill="none"></rect>
-							</symbol>
-						</defs>
 						<BgRect width={width} height={height}></BgRect>
 						{layers.map((layer, i) => <Layer key={i} {...layer}></Layer>)}
+						<g ref={tempGroupRef}></g>
 					</svg>
 					<Preview layers={layers} width={200} height={200}></Preview>
 				</div>
