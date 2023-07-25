@@ -1,6 +1,7 @@
 interface MyMouseEvent {
 	pos: Point;
 	delta: Point;
+	gridPos: Point;
 	ctrlHeld: boolean;
 	shiftHeld: boolean;
 	altHeld: boolean;

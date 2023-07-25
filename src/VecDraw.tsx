@@ -12,9 +12,11 @@ interface AppContextProps {
 	zoom: number;
 	tool: Tool;
 	layers: Array<LayerData>;
+	setLayers: (layers: Array<LayerData>) => void;
 	activeLayer: number;
 	activePoint: number;
 	setActivePoint: (num: number) => void;
+	tempGroup: React.MutableRefObject<SVGGElement>;
 }
 
 const AppContext = React.createContext<AppContextProps>(null);
@@ -24,6 +26,7 @@ const height = 720;
 const VecDraw: React.FC<any> = () => {
 	const svgRef = React.useRef<SVGSVGElement>(null);
 	const mouseStartPos = React.useRef(new Point());
+	const [mouseGridPos, setMouseGridPos] = React.useState(new Point());
 
 	const [pan, setPan] = React.useState(new Point(width / 2, height / 2));
 	const [zoom, setZoom] = React.useState(1.0);
@@ -34,11 +37,13 @@ const VecDraw: React.FC<any> = () => {
 		height: 20
 	});
 
-	const [layers, setLayers] = React.useState<Array<LayerData>>([]);
+	const [layers, setLayers] = React.useState<Array<LayerData>>([{ points: [], lines: [] }]);
 	const [activeLayer, setActiveLayer] = React.useState<number>(0);
 	const [activePoint, setActivePoint] = React.useState<number>(-1);
 	const [actions, setActions] = React.useState<Array<Action>>([]);
-	const [tool, setTool] = React.useState<Tool>(new Pan());
+
+	const tools = [new Pan(), new AddLine()];
+	const [tool, setTool] = React.useState<Tool>(tools[0]);
 	const tempGroupRef = React.useRef<SVGGElement>(null);
 
 	const ctx = {
@@ -48,9 +53,11 @@ const VecDraw: React.FC<any> = () => {
 		zoom,
 		tool,
 		layers,
+		setLayers,
 		activeLayer,
 		activePoint,
-		setActivePoint
+		setActivePoint,
+		tempGroup: tempGroupRef
 	};
 
 	const convertCoords = (x: number, y: number) => {
@@ -61,8 +68,16 @@ const VecDraw: React.FC<any> = () => {
 	const onMouseDown = (e: React.MouseEvent) => {
 		const coords = convertCoords(e.clientX, e.clientY);
 		mouseStartPos.current = new Point(coords.x, coords.y);
+
+		const gridPos = Point.subtract(coords, pan);
+		gridPos.multScalar(1 / zoom);
+		gridPos.x = Math.round(gridPos.x / gridSettings.width) * gridSettings.width;
+		gridPos.y = Math.round(gridPos.y / gridSettings.height) * gridSettings.height;
+		setMouseGridPos(gridPos);
+
 		tool.onMouseDown({
 			pos: coords,
+			gridPos,
 			delta: new Point(),
 			ctrlHeld: e.ctrlKey,
 			shiftHeld: e.shiftKey,
@@ -73,8 +88,16 @@ const VecDraw: React.FC<any> = () => {
 
 	const onMouseMove = (e: React.MouseEvent) => {
 		const coords = convertCoords(e.clientX, e.clientY);
+
+		const gridPos = Point.subtract(coords, pan);
+		gridPos.multScalar(1 / zoom);
+		gridPos.x = Math.round(gridPos.x / gridSettings.width) * gridSettings.width;
+		gridPos.y = Math.round(gridPos.y / gridSettings.height) * gridSettings.height;
+		setMouseGridPos(gridPos);
+
 		tool.onMouseMove({
 			pos: coords,
+			gridPos,
 			delta: Point.subtract(coords, mouseStartPos.current),
 			ctrlHeld: e.ctrlKey,
 			shiftHeld: e.shiftKey,
@@ -85,8 +108,16 @@ const VecDraw: React.FC<any> = () => {
 
 	const onMouseUp = (e: React.MouseEvent) => {
 		const coords = convertCoords(e.clientX, e.clientY);
+
+		const gridPos = Point.subtract(coords, pan);
+		gridPos.multScalar(1 / zoom);
+		gridPos.x = Math.round(gridPos.x / gridSettings.width) * gridSettings.width;
+		gridPos.y = Math.round(gridPos.y / gridSettings.height) * gridSettings.height;
+		setMouseGridPos(gridPos);
+
 		tool.onMouseUp({
 			pos: coords,
+			gridPos,
 			delta: Point.subtract(coords, mouseStartPos.current),
 			ctrlHeld: e.ctrlKey,
 			shiftHeld: e.shiftKey,
@@ -148,42 +179,49 @@ const VecDraw: React.FC<any> = () => {
 					<input type="file" accept=".json" onChange={onSelectFile}></input>
 				</div>
 				<div className="line">
-					<svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} width={width} height={height} onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onWheel={onWheel}>
-						<BgRect width={width} height={height}></BgRect>
-						{layers.map((layer, i) => <Layer key={i} {...layer}></Layer>)}
-						<g ref={tempGroupRef}></g>
-					</svg>
+					<Toolbox tools={tools} select={setTool} selected={tool}></Toolbox>
+					<div className="column">
+						<svg ref={svgRef} width={width} height={height} style={{ width, height }} onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onWheel={onWheel}>
+							<BgRect width={width} height={height}></BgRect>
+							{layers.map((layer, i) => <Layer key={i} {...layer}></Layer>)}
+							<g ref={tempGroupRef}></g>
+						</svg>
+						<div className="line">
+							<div style={{ minWidth: 100 }}>{`X: ${mouseGridPos.x}`}</div>
+							<div style={{ minWidth: 100 }}>{`Y: ${mouseGridPos.y}`}</div>
+						</div>
+						<div className="line" style={{ alignItems: "baseline" }}>
+							<div>
+								<label>Grid width:</label>
+								<input defaultValue={gridSettings.width} onBlur={(e) => updateGridWidth(e.target.value)} onKeyUp={
+									(e) => {
+										if (e.key === "Enter") {
+											(e.target as HTMLElement).blur();
+										}
+									}
+								}></input>
+							</div>
+							<div>
+								<label>Grid height:</label>
+								<input defaultValue={gridSettings.height} onBlur={(e) => updateGridHeight(e.target.value)} onKeyUp={
+									(e) => {
+										if (e.key === "Enter") {
+											(e.target as HTMLElement).blur();
+										}
+									}
+								}></input>
+							</div>
+							<div>
+								<label>Bg color:</label>
+								<input type="color" value={gridSettings.bgColor} onChange={(e) => updateGridSettings({ bgColor: e.target.value })}></input>
+							</div>
+							<div>
+								<label>Grid color:</label>
+								<input type="color" value={gridSettings.gridColor} onChange={(e) => updateGridSettings({ gridColor: e.target.value })}></input>
+							</div>
+						</div>
+					</div>
 					<Preview layers={layers} width={200} height={200}></Preview>
-				</div>
-				<div className="line">
-					<div>
-						<label>Grid width:</label>
-						<input defaultValue={gridSettings.width} onBlur={(e) => updateGridWidth(e.target.value)} onKeyUp={
-							(e) => {
-								if (e.key === "Enter") {
-									(e.target as HTMLElement).blur();
-								}
-							}
-						}></input>
-					</div>
-					<div>
-						<label>Grid height:</label>
-						<input defaultValue={gridSettings.height} onBlur={(e) => updateGridHeight(e.target.value)} onKeyUp={
-							(e) => {
-								if (e.key === "Enter") {
-									(e.target as HTMLElement).blur();
-								}
-							}
-						}></input>
-					</div>
-					<div>
-						<label>Bg color:</label>
-						<input type="color" value={gridSettings.bgColor} onChange={(e) => updateGridSettings({ bgColor: e.target.value })}></input>
-					</div>
-					<div>
-						<label>Grid color:</label>
-						<input type="color" value={gridSettings.gridColor} onChange={(e) => updateGridSettings({ gridColor: e.target.value })}></input>
-					</div>
 				</div>
 			</AppContext.Provider>
 		</div>

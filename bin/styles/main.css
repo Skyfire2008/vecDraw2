@@ -1,13 +1,31 @@
+body {
+	font-family: 'Courier New', Courier, monospace;
+}
+
 .line {
 	display: flex;
 	flex-direction: row;
+}
+
+.column {
+	display: flex;
+	flex-direction: column;
 }
 
 .point {
 	cursor: pointer;
 }
 
-.toolbox{
-    display: flex;
-    flex-direction: column;
+.toolbox {
+	display: flex;
+	flex-direction: column;
+}
+
+.tool {
+	user-select: none;
+	cursor: pointer;
+}
+
+.tool.selected {
+	background-color: aquamarine;
 }
