@@ -21,4 +21,16 @@ class Pan implements Tool {
 	public onMouseUp(e: MyMouseEvent, ctx: AppContextProps) {
 		this.active = false;
 	}
+
+	public onPointClick(num: number) {
+		//do nothing
+	}
+
+	public onEnable(ctx: AppContextProps) {
+		//do nothing
+	}
+
+	public onDisable(ctx: AppContextProps) {
+		//do nothing
+	}
 }

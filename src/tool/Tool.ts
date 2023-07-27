@@ -12,6 +12,9 @@ interface Tool {
 	onMouseDown(e: MyMouseEvent, ctx: AppContextProps);
 	onMouseUp(e: MyMouseEvent, ctx: AppContextProps);
 	onMouseMove(e: MyMouseEvent, ctx: AppContextProps);
+	onPointClick(num: number);
+	onEnable(ctx: AppContextProps);
+	onDisable(ctx: AppContextProps);
 	//onKeyDown(key: string);
 	//onKeyUp(key: string);
 }

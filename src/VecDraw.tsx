@@ -14,8 +14,6 @@ interface AppContextProps {
 	layers: Array<LayerData>;
 	setLayers: (layers: Array<LayerData>) => void;
 	activeLayer: number;
-	activePoint: number;
-	setActivePoint: (num: number) => void;
 	tempGroup: React.MutableRefObject<SVGGElement>;
 }
 
@@ -39,7 +37,6 @@ const VecDraw: React.FC<any> = () => {
 
 	const [layers, setLayers] = React.useState<Array<LayerData>>([{ points: [], lines: [] }]);
 	const [activeLayer, setActiveLayer] = React.useState<number>(0);
-	const [activePoint, setActivePoint] = React.useState<number>(-1);
 	const [actions, setActions] = React.useState<Array<Action>>([]);
 
 	const tools = [new Pan(), new AddLine()];
@@ -55,8 +52,6 @@ const VecDraw: React.FC<any> = () => {
 		layers,
 		setLayers,
 		activeLayer,
-		activePoint,
-		setActivePoint,
 		tempGroup: tempGroupRef
 	};
 
@@ -179,7 +174,11 @@ const VecDraw: React.FC<any> = () => {
 					<input type="file" accept=".json" onChange={onSelectFile}></input>
 				</div>
 				<div className="line">
-					<Toolbox tools={tools} select={setTool} selected={tool}></Toolbox>
+					<Toolbox tools={tools} select={(newTool: Tool) => {
+						tool.onDisable(ctx);
+						setTool(newTool);
+						newTool.onEnable(ctx);
+					}} selected={tool}></Toolbox>
 					<div className="column">
 						<svg ref={svgRef} width={width} height={height} style={{ width, height }} onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onWheel={onWheel}>
 							<BgRect width={width} height={height}></BgRect>
