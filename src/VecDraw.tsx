@@ -15,6 +15,7 @@ interface AppContextProps {
 	setLayers: (layers: Array<LayerData>) => void;
 	activeLayer: number;
 	tempGroup: React.MutableRefObject<SVGGElement>;
+	addAction: (action: Action) => void;
 }
 
 const AppContext = React.createContext<AppContextProps>(null);
@@ -52,7 +53,8 @@ const VecDraw: React.FC<any> = () => {
 		layers,
 		setLayers,
 		activeLayer,
-		tempGroup: tempGroupRef
+		tempGroup: tempGroupRef,
+		addAction: (action) => { setActions(actions.concat(action)) }
 	};
 
 	const convertCoords = (x: number, y: number) => {
