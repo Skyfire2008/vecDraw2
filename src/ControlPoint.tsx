@@ -9,7 +9,7 @@ const ControlPoint: React.FC<ControlPointProps> = ({ num, p }) => {
 	const pos = convertCoords(p, ctx.pan, ctx.zoom, 0);
 
 	const onClick = (e: React.MouseEvent) => {
-		ctx.tool.onPointClick(num);
+		ctx.tool.onPointClick(num, ctx);
 		e.bubbles = false;
 		e.stopPropagation();
 	};
