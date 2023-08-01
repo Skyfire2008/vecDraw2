@@ -2,9 +2,13 @@
 class AddLine implements Tool {
 
 	readonly name = "AddLine";
-	private activePoint = -1;
+	public activePoint = -1;
 
-	constructor() { }
+    constructor() { }
+    
+    public static isAddLine(tool: Tool): tool is AddLine{
+        return tool.name == "AddLine";
+    }
 
 	public onMouseDown(e: MyMouseEvent, ctx: AppContextProps) {
 	}

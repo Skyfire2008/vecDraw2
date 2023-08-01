@@ -27,7 +27,14 @@ class AddPointAction implements Action {
 
 	public undo(ctx: AppContextProps) {
 		const layer = ctx.layers[this.layer];
-		layer.points.pop();
+        layer.points.pop();
+
+        if (AddLine.isAddLine(ctx.tool)) {
+            if (ctx.tool.activePoint == this.num) {
+                ctx.tool.activePoint = layer.points.length -1;
+            }
+        }
+
 		ctx.setLayers(ctx.layers.slice(0));
 	}
 }
@@ -56,9 +63,16 @@ class AddLineAction implements Action {
 	public undo(ctx: AppContextProps) {
 		const layer = ctx.layers[this.layer];
 		if (this.isPointNew) {
-			layer.points.pop();
+            layer.points.pop();
+            
+            if (AddLine.isAddLine(ctx.tool)) {
+                if (ctx.tool.activePoint == this.to) {
+                    ctx.tool.activePoint = layer.points.length - 1;
+                }
+            }
 		}
-		layer.lines.pop();
+        layer.lines.pop();
+        
 
 		ctx.setLayers(ctx.layers.slice(0));
 	}
