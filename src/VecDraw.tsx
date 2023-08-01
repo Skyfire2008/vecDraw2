@@ -222,7 +222,10 @@ const VecDraw: React.FC<any> = () => {
 							</div>
 						</div>
 					</div>
-					<Preview layers={layers} width={200} height={200}></Preview>
+					<div className="column">
+						<Preview layers={layers} width={200} height={200}></Preview>
+						<ActionList actions={actions} setActions={setActions}></ActionList>
+					</div>
 				</div>
 			</AppContext.Provider>
 		</div>

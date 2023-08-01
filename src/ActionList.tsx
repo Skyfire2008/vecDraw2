@@ -1,7 +1,7 @@
 interface Action {
-  name: string;
+	name: string;
 	do(ctx: AppContextProps): void;
-  undo(ctx: AppContextProps): void;
+	undo(ctx: AppContextProps): void;
 }
 
 interface ActionListProps {
@@ -9,7 +9,30 @@ interface ActionListProps {
 	setActions: (actions: Array<Action>) => void;
 }
 
-class AddLineAction implements Action{
+class AddPointAction implements Action {
+
+	readonly name: string;
+	private layer: number;
+	private num: number;
+
+	constructor(layer: number, num: number) {
+		this.name = `Added point ${num} on layer ${layer}`;
+		this.layer = layer;
+		this.num = num;
+	}
+
+	public do(ctx: AppContextProps) {
+		//do nothing
+	}
+
+	public undo(ctx: AppContextProps) {
+		const layer = ctx.layers[this.layer];
+		layer.points.pop();
+		ctx.setLayers(ctx.layers.slice(0));
+	}
+}
+
+class AddLineAction implements Action {
 
 	readonly name: string;
 	private layer: number;
@@ -31,11 +54,13 @@ class AddLineAction implements Action{
 
 	//TODO: probably only need to pop last point and last line
 	public undo(ctx: AppContextProps) {
-		/*const layer = ctx.layers[this.layer];
+		const layer = ctx.layers[this.layer];
 		if (this.isPointNew) {
-			layer.points.splice(this.to);
+			layer.points.pop();
 		}
-		layer.lines.*/
+		layer.lines.pop();
+
+		ctx.setLayers(ctx.layers.slice(0));
 	}
 }
 
@@ -53,7 +78,7 @@ const ActionList: React.FC<ActionListProps> = ({ actions, setActions }) => {
 	return (
 		<div>
 			<div>Actions</div>
-			<div>{actions.map((action) => <div>{action.name}</div>)}</div>
+			<div>{actions.map((action, i) => <div key={i}>{action.name}</div>)}</div>
 			<div>
 				<button onClick={undo}>Undo</button>
 			</div>
