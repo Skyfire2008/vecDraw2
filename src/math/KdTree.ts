@@ -20,7 +20,6 @@ class KdNode {
 			const yDist = ySorted[num - 1].y - ySorted[0].y;
 
 			const median = Math.floor(num / 2);
-			this.point = xSorted[median];
 
 			let xSorted0: Array<PointLike> = [];
 			let xSorted1: Array<PointLike> = [];
@@ -29,36 +28,64 @@ class KdNode {
 
 			if (xDist > yDist) {
 				this.split = Split.Horizontal;
+				this.point = xSorted[median];
 
 				xSorted0 = xSorted.splice(0, median);
 				xSorted1 = xSorted;
 				xSorted1.shift();
 
 				for (const point of ySorted) {
-					if (point.y < this.point.y) {
+					if (point.x < this.point.x) {
 						ySorted0.push(point);
 					} else {
 						if (point != this.point) {
-							ySorted1.push(point);
+							if (point.x > this.point.x || (point.x == this.point.x && point.y < this.point.y)) {
+								ySorted1.push(point);
+							}
 						}
 					}
 				}
 
 			} else {
 				this.split = Split.Vertical;
+				this.point = ySorted[median];
 
 				ySorted0 = ySorted.splice(0, median);
 				ySorted1 = ySorted;
 				ySorted1.shift();
 
 				for (const point of xSorted) {
-					if (point.x < this.point.x) {
+					if (point.y < this.point.y) {
 						xSorted0.push(point);
 					} else {
 						if (point != this.point) {
-							xSorted1.push(point);
+							if (point.y > this.point.y || (point.y == this.point.y && point.x < this.point.x)) {
+								xSorted1.push(point);
+							}
 						}
 					}
+				}
+			}
+
+			//TODO: used to catch errors, remove later
+			for (const point of xSorted0) {
+				if (ySorted0.indexOf(point) < 0) {
+					throw "W0T W0T W0T";
+				}
+			}
+			for (const point of xSorted1) {
+				if (ySorted1.indexOf(point) < 0) {
+					throw "W0T W0T W0T";
+				}
+			}
+			for (const point of ySorted0) {
+				if (xSorted0.indexOf(point) < 0) {
+					throw "W0T W0T W0T";
+				}
+			}
+			for (const point of ySorted1) {
+				if (xSorted1.indexOf(point) < 0) {
+					throw "W0T W0T W0T";
 				}
 			}
 
@@ -92,8 +119,14 @@ class KdTree {
 	root: KdNode;
 
 	constructor(points: Array<PointLike>) {
-		const xSorted = points.slice(0).sort((a, b) => a.x - b.x);
-		const ySorted = points.slice(0).sort((a, b) => a.y - b.y);
+		const xSorted = points.slice(0).sort((a, b) => {
+			const diff = a.x - b.x;
+			return (diff != 0) ? diff : a.y - b.y;
+		});
+		const ySorted = points.slice(0).sort((a, b) => {
+			const diff = a.y - b.y;
+			return (diff != 0) ? diff : a.x - b.x;
+		});
 
 		this.root = new KdNode(xSorted, ySorted);
 	}
