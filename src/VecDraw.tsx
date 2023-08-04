@@ -37,6 +37,7 @@ const VecDraw: React.FC<any> = () => {
 	});
 
 	const [layers, setLayers] = React.useState<Array<LayerData>>([{ points: [], lines: [] }]);
+	const kdTree = React.useRef<KdTree>(null);
 	const [activeLayer, setActiveLayer] = React.useState<number>(0);
 	const [actions, setActions] = React.useState<Array<Action>>([]);
 
@@ -136,7 +137,9 @@ const VecDraw: React.FC<any> = () => {
 		if (files.length > 0) {
 			const fr = new FileReader();
 			fr.addEventListener("load", () => {
-				setLayers(loadShape(fr.result as string).layers);
+				const shape = loadShape(fr.result as string);
+				setLayers(shape.layers);
+				kdTree.current = new KdTree(shape.layers[0].points);
 			});
 
 			fr.readAsText(files[0]);

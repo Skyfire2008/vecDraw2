@@ -72,33 +72,29 @@ class KdNode {
 	}
 
 	public add(point: PointLike) {
-		if (this.split == Split.Horizontal) {
-			if (point.x > this.point.x) {
-
+		if ((this.split == Split.Horizontal && point.x > this.point.x) || (this.split == Split.Vertical && point.y > this.point.y)) {
+			if (this.kid1 != null) {
+				this.kid1 = new KdNode([point], null);
 			} else {
-
+				this.kid1.add(point);
 			}
-
 		} else {
-			if (point.y > this.point.y) {
-
+			if (this.kid0 == null) {
+				this.kid0 = new KdNode([point], null);
 			} else {
-
+				this.kid0.add(point);
 			}
 		}
 	}
 }
 
 class KdTree {
-	private root: KdNode;
+	root: KdNode;
 
 	constructor(points: Array<PointLike>) {
-		const num = points.length;
 		const xSorted = points.slice(0).sort((a, b) => a.x - b.x);
 		const ySorted = points.slice(0).sort((a, b) => a.y - b.y);
 
-		if (xSorted[num - 1].x - xSorted[0].x > ySorted[num - 1].y - ySorted[0].y) {
-
-		}
+		this.root = new KdNode(xSorted, ySorted);
 	}
 }
