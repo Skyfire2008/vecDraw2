@@ -10,7 +10,7 @@ interface LayerData {
 	lines: Array<Line>;
 }
 
-const convertCoords = (p: Point, pan: Point, zoom: number, thickness: number) => {
+const convertCoords = (p: PointLike, pan: PointLike, zoom: number, thickness: number) => {
 	let result = Point.scale(p, zoom);
 	result.add(pan);
 	let frac = thickness / 2;
