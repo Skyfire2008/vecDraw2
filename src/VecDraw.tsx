@@ -48,7 +48,7 @@ const VecDraw: React.FC<any> = () => {
 		kdLines = kdTree.current.getLines(pan, zoom, width, height);
 	}
 
-	const tools = [new Pan(), new AddLine()];
+	const tools = [new Pan(), new AddLine(), new Select()];
 	const [tool, setTool] = React.useState<Tool>(tools[0]);
 	const tempGroupRef = React.useRef<SVGGElement>(null);
 

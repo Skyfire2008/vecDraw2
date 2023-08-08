@@ -172,6 +172,30 @@ class KdNode {
 
 		return result;
 	}
+
+	public queryRect(x0: number, y0: number, x1: number, y1: number, result: Array<PointLike>): Array<PointLike> {
+		if (x0 < this.point.x && x1 >= this.point.x && y0 < this.point.y && y1 >= this.point.y) {
+			result.push(this.point);
+		}
+
+		if (this.split == Split.Horizontal) {
+			if (x0 < this.point.x) {
+				this.kid0.queryRect(x0, y0, this.point.x, y1, result);
+			}
+			if (this.point.x >= x1) {
+				this.kid1.queryRect(this.point.x, y0, x1, y1, result);
+			}
+		} else if (this.split == Split.Vertical) {
+			if (y0 < this.point.y) {
+				this.kid0.queryRect(x0, y0, x1, this.point.y, result);
+			}
+			if (this.point.y >= y1) {
+				this.kid1.queryRect(x0, this.point.y, x1, y1, result);
+			}
+		}
+
+		return result;
+	}
 }
 
 class KdTree {
@@ -202,5 +226,13 @@ class KdTree {
 
 	public getLines(pan: PointLike, zoom: number, width: number, height: number): Array<KdLine> {
 		return this.root.getLines(pan, zoom, 0, 0, width, height);
+	}
+
+	public queryRect(x0: number, y0: number, x1: number, y1: number): Array<PointLike> {
+		if (this.root == null) {
+			return [];
+		} else {
+			return this.root.queryRect(x0, y0, x1, y1, []);
+		}
 	}
 }
