@@ -24,7 +24,6 @@ class AddLine implements Tool {
 
 	public onMouseUp(e: MyMouseEvent, ctx: AppContextProps) {
 		const points = ctx.layers[ctx.activeLayer].points.concat(e.gridPos);
-		ctx.kdTree.addPoint(e.gridPos);
 		let lines = ctx.layers[ctx.activeLayer].lines;
 		const newNum = points.length - 1;
 		if (this.activePoint >= 0) {

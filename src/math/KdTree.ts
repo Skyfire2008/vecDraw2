@@ -1,3 +1,4 @@
+//INFO: do not use, queryrect is not teste properly
 enum Split {
 	Vertical = 0,
 	Horizontal = 1,
@@ -179,17 +180,17 @@ class KdNode {
 		}
 
 		if (this.split == Split.Horizontal) {
-			if (x0 < this.point.x) {
+			if (x0 < this.point.x && this.kid0 != null) {
 				this.kid0.queryRect(x0, y0, this.point.x, y1, result);
 			}
-			if (this.point.x >= x1) {
+			if (this.point.x >= x1 && this.kid1 != null) {
 				this.kid1.queryRect(this.point.x, y0, x1, y1, result);
 			}
 		} else if (this.split == Split.Vertical) {
-			if (y0 < this.point.y) {
+			if (y0 < this.point.y && this.kid0 != null) {
 				this.kid0.queryRect(x0, y0, x1, this.point.y, result);
 			}
-			if (this.point.y >= y1) {
+			if (this.point.y >= y1 && this.kid1 != null) {
 				this.kid1.queryRect(x0, this.point.y, x1, y1, result);
 			}
 		}

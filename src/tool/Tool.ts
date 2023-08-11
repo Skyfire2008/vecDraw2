@@ -1,6 +1,10 @@
 interface MyMouseEvent {
+	/** Position relative to top left corner of svg */
 	pos: Point;
+	/** Position relative to shape */
+	shapePos: Point;
 	delta: Point;
+	/** Position on the grid */
 	gridPos: Point;
 	ctrlHeld: boolean;
 	shiftHeld: boolean;

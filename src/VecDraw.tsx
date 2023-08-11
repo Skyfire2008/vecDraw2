@@ -13,8 +13,9 @@ interface AppContextProps {
 	tool: Tool;
 	layers: Array<LayerData>;
 	setLayers: (layers: Array<LayerData>) => void;
-	kdTree: KdTree;
 	activeLayer: number;
+	selection: Set<PointLike>;
+	setSelection: (selection: Set<PointLike>) => void;
 	tempGroup: React.MutableRefObject<SVGGElement>;
 	addAction: (action: Action) => void;
 }
@@ -38,15 +39,10 @@ const VecDraw: React.FC<any> = () => {
 	});
 
 	const [layers, setLayers] = React.useState<Array<LayerData>>([{ points: [], lines: [] }]);
-	const kdTree = React.useRef<KdTree>(new KdTree([]));
-	const [showKdTree, setShowKdTree] = React.useState(false);
 	const [activeLayer, setActiveLayer] = React.useState<number>(0);
 	const [actions, setActions] = React.useState<Array<Action>>([]);
 
-	let kdLines: Array<KdLine> = [];
-	if (showKdTree) {
-		kdLines = kdTree.current.getLines(pan, zoom, width, height);
-	}
+	const [selection, setSelection] = React.useState<Set<PointLike>>(new Set<PointLike>());
 
 	const tools = [new Pan(), new AddLine(), new Select()];
 	const [tool, setTool] = React.useState<Tool>(tools[0]);
@@ -59,9 +55,10 @@ const VecDraw: React.FC<any> = () => {
 		zoom,
 		tool,
 		layers,
-		kdTree: kdTree.current,
 		setLayers,
 		activeLayer,
+		selection,
+		setSelection,
 		tempGroup: tempGroupRef,
 		addAction: (action) => { setActions(actions.concat(action)) }
 	};
@@ -75,14 +72,14 @@ const VecDraw: React.FC<any> = () => {
 		const coords = svgCoords(e.clientX, e.clientY);
 		mouseStartPos.current = new Point(coords.x, coords.y);
 
-		const gridPos = Point.subtract(coords, pan);
-		gridPos.multScalar(1 / zoom);
-		gridPos.x = Math.round(gridPos.x / gridSettings.width) * gridSettings.width;
-		gridPos.y = Math.round(gridPos.y / gridSettings.height) * gridSettings.height;
+		const shapePos = Point.subtract(coords, pan);
+		shapePos.multScalar(1 / zoom);
+		const gridPos = new Point(Math.round(shapePos.x / gridSettings.width) * gridSettings.width, Math.round(shapePos.y / gridSettings.height) * gridSettings.height);
 		setMouseGridPos(gridPos);
 
 		tool.onMouseDown({
 			pos: coords,
+			shapePos,
 			gridPos,
 			delta: new Point(),
 			ctrlHeld: e.ctrlKey,
@@ -95,14 +92,14 @@ const VecDraw: React.FC<any> = () => {
 	const onMouseMove = (e: React.MouseEvent) => {
 		const coords = svgCoords(e.clientX, e.clientY);
 
-		const gridPos = Point.subtract(coords, pan);
-		gridPos.multScalar(1 / zoom);
-		gridPos.x = Math.round(gridPos.x / gridSettings.width) * gridSettings.width;
-		gridPos.y = Math.round(gridPos.y / gridSettings.height) * gridSettings.height;
+		const shapePos = Point.subtract(coords, pan);
+		shapePos.multScalar(1 / zoom);
+		const gridPos = new Point(Math.round(shapePos.x / gridSettings.width) * gridSettings.width, Math.round(shapePos.y / gridSettings.height) * gridSettings.height);
 		setMouseGridPos(gridPos);
 
 		tool.onMouseMove({
 			pos: coords,
+			shapePos,
 			gridPos,
 			delta: Point.subtract(coords, mouseStartPos.current),
 			ctrlHeld: e.ctrlKey,
@@ -115,14 +112,14 @@ const VecDraw: React.FC<any> = () => {
 	const onMouseUp = (e: React.MouseEvent) => {
 		const coords = svgCoords(e.clientX, e.clientY);
 
-		const gridPos = Point.subtract(coords, pan);
-		gridPos.multScalar(1 / zoom);
-		gridPos.x = Math.round(gridPos.x / gridSettings.width) * gridSettings.width;
-		gridPos.y = Math.round(gridPos.y / gridSettings.height) * gridSettings.height;
+		const shapePos = Point.subtract(coords, pan);
+		shapePos.multScalar(1 / zoom);
+		const gridPos = new Point(Math.round(shapePos.x / gridSettings.width) * gridSettings.width, Math.round(shapePos.y / gridSettings.height) * gridSettings.height);
 		setMouseGridPos(gridPos);
 
 		tool.onMouseUp({
 			pos: coords,
+			shapePos,
 			gridPos,
 			delta: Point.subtract(coords, mouseStartPos.current),
 			ctrlHeld: e.ctrlKey,
@@ -147,7 +144,6 @@ const VecDraw: React.FC<any> = () => {
 			fr.addEventListener("load", () => {
 				const shape = loadShape(fr.result as string);
 				setLayers(shape.layers);
-				kdTree.current = new KdTree(shape.layers[0].points);
 			});
 
 			fr.readAsText(files[0]);
@@ -197,7 +193,6 @@ const VecDraw: React.FC<any> = () => {
 							<BgRect width={width} height={height}></BgRect>
 							{layers.map((layer, i) => <Layer key={i} {...layer}></Layer>)}
 							<g ref={tempGroupRef}></g>
-							<g>{kdLines.map((line, i) => <line key={i} strokeWidth="1" stroke="red" x1={line.x1} y1={line.y1} x2={line.x2} y2={line.y2}></line>)}</g>
 						</svg>
 						<div className="line">
 							<div style={{ minWidth: 100 }}>{`X: ${mouseGridPos.x}`}</div>
@@ -237,7 +232,6 @@ const VecDraw: React.FC<any> = () => {
 					<div className="column">
 						<Preview layers={layers} width={200} height={200}></Preview>
 						<ActionList actions={actions} setActions={setActions}></ActionList>
-						<button onClick={() => setShowKdTree(!showKdTree)}>Toggle kdTree</button>
 					</div>
 				</div>
 			</AppContext.Provider>
