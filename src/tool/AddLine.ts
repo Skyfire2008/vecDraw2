@@ -17,8 +17,8 @@ class AddLine implements Tool {
 
 		const pos = convertCoords(e.gridPos, ctx.pan, ctx.zoom, 0);
 		let newInnerHtml = `
-		<rect className="temp-point" x=${pos.x - 3.5} y=${pos.y - 3.5} width="7" height="7" stroke="black" fill="#00000000"></rect>
-		<rect className="temp-point" x=${pos.x - 2.5} y=${pos.y - 2.5} width="5" height="5" stroke="white" fill="none"></rect>`;
+		<rect class="temp-point" x=${pos.x - 3.5} y=${pos.y - 3.5} width="7" height="7" stroke="black" fill="#00000000"></rect>
+		<rect class="temp-point" x=${pos.x - 2.5} y=${pos.y - 2.5} width="5" height="5" stroke="white" fill="none"></rect>`;
 
 		//let newInnerHtml = "";
 
