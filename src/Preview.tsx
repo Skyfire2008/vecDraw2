@@ -41,6 +41,7 @@ const Preview: React.FC<PreviewProps> = ({ layers, width, height, bgColor/*left,
 	const scale = Math.min(1, width / (dimensions.right - dimensions.left), height / (dimensions.bottom - dimensions.top));
 
 	const convertPoint = (p: Point, thickness: number) => {
+		thickness = Math.floor(thickness / scale);
 		const result = Point.subtract(p, { x: dimensions.left, y: dimensions.top });
 		result.multScalar(scale);
 		let frac = thickness / 2;

@@ -19,6 +19,10 @@ class Point implements PointLike {
 		return new Point(p.x * m, p.y * m);
 	}
 
+	public static equals(a: PointLike, b: PointLike): boolean {
+		return a.x == b.x && a.y == b.y;
+	}
+
 	constructor(x: number = 0, y: number = 0) {
 		this.x = x;
 		this.y = y;

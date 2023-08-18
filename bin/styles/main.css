@@ -16,6 +16,11 @@ body {
 	cursor: pointer;
 }
 
+.temp-point {
+	user-select: none;
+	pointer-events: none;
+}
+
 .toolbox {
 	display: flex;
 	flex-direction: column;
