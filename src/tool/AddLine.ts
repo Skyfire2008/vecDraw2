@@ -16,9 +16,9 @@ class AddLine implements Tool {
 	public onMouseMove(e: MyMouseEvent, ctx: AppContextProps) {
 		if (this.activePoint >= 0) {
 			const activePoint = ctx.layers[ctx.activeLayer].points[this.activePoint];
-			const p1 = convertCoords(activePoint, ctx.pan, ctx.zoom, 2);
-			const p2 = convertCoords(e.gridPos, ctx.pan, ctx.zoom, 2);
-			ctx.tempGroup.current.innerHTML = `<line x1=${p1.x} y1=${p1.y} x2=${p2.x} y2=${p2.y} stroke="white"></line>`
+			const p1 = convertCoords(activePoint, ctx.pan, ctx.zoom, ctx.lineThickness);
+			const p2 = convertCoords(e.gridPos, ctx.pan, ctx.zoom, ctx.lineThickness);
+			ctx.tempGroup.current.innerHTML = `<line x1=${p1.x} y1=${p1.y} x2=${p2.x} y2=${p2.y} stroke=${ctx.lineColor} stroke-width=${ctx.lineThickness}></line>`
 		}
 	}
 
@@ -27,7 +27,7 @@ class AddLine implements Tool {
 		let lines = ctx.layers[ctx.activeLayer].lines;
 		const newNum = points.length - 1;
 		if (this.activePoint >= 0) {
-			lines = lines.concat({ from: this.activePoint, to: newNum, color: "#ffffff", thickness: 0 });
+			lines = lines.concat({ from: this.activePoint, to: newNum, color: ctx.lineColor, thickness: ctx.lineThickness });
 			ctx.addAction(new AddLineAction(ctx.activeLayer, this.activePoint, newNum, true));
 		} else {
 			ctx.addAction(new AddPointAction(ctx.activeLayer, newNum));
@@ -42,7 +42,7 @@ class AddLine implements Tool {
 	public onPointClick(num: number, ctx: AppContextProps) {
 		if (this.activePoint >= 0 && num != this.activePoint) {
 			let lines = ctx.layers[ctx.activeLayer].lines;
-			lines = lines.concat({ from: this.activePoint, to: num, color: "#ffffff", thickness: 0 });
+			lines = lines.concat({ from: this.activePoint, to: num, color: ctx.lineColor, thickness: ctx.lineThickness });
 			const newLayers = ctx.layers.slice(0);
 			newLayers[ctx.activeLayer].lines = lines;
 

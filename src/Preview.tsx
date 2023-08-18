@@ -3,13 +3,14 @@ interface PreviewProps {
 	layers: Array<LayerData>;
 	width: number;
 	height: number;
+	bgColor: string;
 	/*left: number;
 	right: number;
 	top: number;
 	bottom: number;*/
 }
 
-const Preview: React.FC<PreviewProps> = ({ layers, width, height, /*left, right, top, bottom*/ }) => {
+const Preview: React.FC<PreviewProps> = ({ layers, width, height, bgColor/*left, right, top, bottom*/ }) => {
 
 	const canvasRef = React.useRef<HTMLCanvasElement>();
 
@@ -50,11 +51,12 @@ const Preview: React.FC<PreviewProps> = ({ layers, width, height, /*left, right,
 		return result;
 	};
 
+	//TODO: scale line thicnkess
 	React.useEffect(() => {
 		const ctx = canvasRef.current.getContext("2d");
 		ctx.lineJoin = "round";
 		ctx.lineCap = "round";
-		ctx.fillStyle = "black";
+		ctx.fillStyle = bgColor;
 		ctx.fillRect(0, 0, width, height);
 
 		for (const layer of layers) {

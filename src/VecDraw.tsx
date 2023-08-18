@@ -14,6 +14,8 @@ interface AppContextProps {
 	layers: Array<LayerData>;
 	setLayers: (layers: Array<LayerData>) => void;
 	activeLayer: number;
+	lineThickness: number;
+	lineColor: string;
 	selection: Set<PointLike>;
 	setSelection: (selection: Set<PointLike>) => void;
 	tempGroup: React.MutableRefObject<SVGGElement>;
@@ -42,6 +44,9 @@ const VecDraw: React.FC<any> = () => {
 	const [activeLayer, setActiveLayer] = React.useState<number>(0);
 	const [actions, setActions] = React.useState<Array<Action>>([]);
 
+	const [lineColor, setLineColor] = React.useState("#FFFFFF");
+	const [lineThickness, setLineThickness] = React.useState(1);
+
 	const [selection, setSelection] = React.useState<Set<PointLike>>(new Set<PointLike>());
 
 	const tools = [new Pan(), new AddLine(), new Select()];
@@ -57,6 +62,8 @@ const VecDraw: React.FC<any> = () => {
 		layers,
 		setLayers,
 		activeLayer,
+		lineColor,
+		lineThickness,
 		selection,
 		setSelection,
 		tempGroup: tempGroupRef,
@@ -198,6 +205,20 @@ const VecDraw: React.FC<any> = () => {
 							<div style={{ minWidth: 100 }}>{`X: ${mouseGridPos.x}`}</div>
 							<div style={{ minWidth: 100 }}>{`Y: ${mouseGridPos.y}`}</div>
 						</div>
+						<div className="line">
+							<div>
+								<label>Thickness:</label>
+								<input defaultValue={lineThickness} onBlur={(e) => setLineThickness(Number.parseInt(e.target.value))} onKeyDown={
+									(e) => {
+										if (e.key == "Enter") {
+											(e.target as HTMLElement).blur()
+										}
+									}
+								}></input>
+								<label>Color:</label>
+								<input type="color" defaultValue={lineColor} onChange={(e) => setLineColor(e.target.value)}></input>
+							</div>
+						</div>
 						<div className="line" style={{ alignItems: "baseline" }}>
 							<div>
 								<label>Grid width:</label>
@@ -230,11 +251,11 @@ const VecDraw: React.FC<any> = () => {
 						</div>
 					</div>
 					<div className="column">
-						<Preview layers={layers} width={200} height={200}></Preview>
+						<Preview layers={layers} width={200} height={200} bgColor={gridSettings.bgColor}></Preview>
 						<ActionList actions={actions} setActions={setActions}></ActionList>
 					</div>
 				</div>
-			</AppContext.Provider>
-		</div>
+			</AppContext.Provider >
+		</div >
 	);
 }
