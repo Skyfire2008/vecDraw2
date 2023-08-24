@@ -71,20 +71,6 @@ class AddLine implements Tool {
 		this.activePoint = toPoint;
 	}
 
-	public onPointClick(num: number, ctx: AppContextProps) {
-		if (this.activePoint >= 0 && num != this.activePoint) {
-			let lines = ctx.layers[ctx.activeLayer].lines;
-			lines = lines.concat({ from: this.activePoint, to: num, color: ctx.lineColor, thickness: ctx.lineThickness });
-			const newLayers = ctx.layers.slice(0);
-			newLayers[ctx.activeLayer].lines = lines;
-
-			ctx.setLayers(newLayers);
-			ctx.addAction(new AddLineAction(ctx.activeLayer, this.activePoint, num, false));
-		}
-
-		this.activePoint = num;
-	}
-
 	public onEnable(ctx: AppContextProps) {
 		this.activePoint = -1;
 	}

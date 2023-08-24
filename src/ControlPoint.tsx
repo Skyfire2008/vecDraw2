@@ -11,9 +11,12 @@ const ControlPoint: React.FC<ControlPointProps> = ({ num, p }) => {
 	const isSelected = ctx.selection.has(p);
 
 	const onClick = (e: React.MouseEvent) => {
-		ctx.tool.onPointClick(num, ctx);
-		e.bubbles = false;
-		e.stopPropagation();
+		//only stop event propagation if tool has a special method for point click
+		if (ctx.tool.onPointClick != null) {
+			ctx.tool.onPointClick(num, ctx);
+			e.bubbles = false;
+			e.stopPropagation();
+		}
 	};
 
 	return (

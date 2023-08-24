@@ -22,9 +22,9 @@ class Pan implements Tool {
 		this.active = false;
 	}
 
-	public onPointClick(num: number) {
+	/*public onPointClick(num: number) {
 		//do nothing
-	}
+	}*/
 
 	public onEnable(ctx: AppContextProps) {
 		//do nothing
