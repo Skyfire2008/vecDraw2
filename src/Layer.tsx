@@ -10,6 +10,10 @@ interface LayerData {
 	lines: Array<Line>;
 }
 
+interface LayerProps extends LayerData {
+	highlight: Highlight;
+}
+
 const convertCoords = (p: PointLike, pan: PointLike, zoom: number, thickness: number) => {
 	let result = Point.scale(p, zoom);
 	result.add(pan);
@@ -20,7 +24,7 @@ const convertCoords = (p: PointLike, pan: PointLike, zoom: number, thickness: nu
 	return result;
 };
 
-const Layer: React.FC<LayerData> = ({ lines, points }) => {
+const Layer: React.FC<LayerProps> = ({ lines, points, highlight }) => {
 	const ctx = React.useContext(AppContext);
 
 	return (
@@ -44,7 +48,7 @@ const Layer: React.FC<LayerData> = ({ lines, points }) => {
 				);
 			})}
 			</g>
-			<g>{points.map((point, i) => <ControlPoint key={i} num={i} p={point}></ControlPoint>)}
+			<g>{points.map((point, i) => <ControlPoint key={i} num={i} p={point} isHighlighted={highlight?.pointNum == i}></ControlPoint>)}
 			</g>
 		</>
 	);

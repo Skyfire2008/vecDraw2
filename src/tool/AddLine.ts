@@ -61,7 +61,9 @@ class AddLine implements Tool {
 				ctx.addAction(new AddLineAction(ctx.activeLayer, this.activePoint, toPoint, pointIsNew));
 			}
 		} else {
-			ctx.addAction(new AddPointAction(ctx.activeLayer, toPoint));
+			if (pointIsNew) {
+				ctx.addAction(new AddPointAction(ctx.activeLayer, toPoint));
+			}
 		}
 
 		const newLayers = ctx.layers.slice(0);

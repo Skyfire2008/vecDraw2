@@ -5,6 +5,12 @@ interface GridSettings {
 	height: number;
 }
 
+interface Highlight {
+	layerNum: number;
+	pointNum?: number;
+	lineNum?: number;
+}
+
 interface AppContextProps {
 	gridSettings: GridSettings;
 	pan: Point;
@@ -20,6 +26,7 @@ interface AppContextProps {
 	setSelection: (selection: Set<PointLike>) => void;
 	tempGroup: React.MutableRefObject<SVGGElement>;
 	addAction: (action: Action) => void;
+	setHighlight: (highlight: Highlight) => void;
 }
 
 const AppContext = React.createContext<AppContextProps>(null);
@@ -48,6 +55,7 @@ const VecDraw: React.FC<any> = () => {
 	const [lineThickness, setLineThickness] = React.useState(1);
 
 	const [selection, setSelection] = React.useState<Set<PointLike>>(new Set<PointLike>());
+	const [highlight, setHighlight] = React.useState<Highlight>(null);
 
 	const tools = [new Pan(), new AddLine(), new Select()];
 	const [tool, setTool] = React.useState<Tool>(tools[0]);
@@ -67,7 +75,8 @@ const VecDraw: React.FC<any> = () => {
 		selection,
 		setSelection,
 		tempGroup: tempGroupRef,
-		addAction: (action) => { setActions(actions.concat(action)) }
+		addAction: (action) => { setActions(actions.concat(action)) },
+		setHighlight
 	};
 
 	const svgCoords = (x: number, y: number) => {
@@ -198,7 +207,7 @@ const VecDraw: React.FC<any> = () => {
 					<div className="column">
 						<svg ref={svgRef} width={width} height={height} style={{ width, height }} onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onWheel={onWheel}>
 							<BgRect width={width} height={height}></BgRect>
-							{layers.map((layer, i) => <Layer key={i} {...layer}></Layer>)}
+							{layers.map((layer, i) => <Layer key={i} {...layer} highlight={highlight?.layerNum == i ? highlight : null}></Layer>)}
 							<g ref={tempGroupRef}></g>
 						</svg>
 						<div className="line">

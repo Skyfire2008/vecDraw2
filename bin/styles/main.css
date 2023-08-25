@@ -34,3 +34,8 @@ body {
 .tool.selected {
 	background-color: aquamarine;
 }
+
+.action-highlightable {
+	font-weight: bold;
+	cursor: pointer;
+}
