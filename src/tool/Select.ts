@@ -33,7 +33,6 @@ class Select implements Tool {
 			y1 = this.startShapePos.y;
 		}
 
-		console.log(x0, y0, x1, y1);
 		const selection = new Set<PointLike>();
 		for (const point of ctx.layers[ctx.activeLayer].points) {
 			if (point.x > x0 && point.x <= x1 && point.y > y0 && point.y <= y1) {

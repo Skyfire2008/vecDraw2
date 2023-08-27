@@ -10,8 +10,11 @@ interface LayerData {
 	lines: Array<Line>;
 }
 
-interface LayerProps extends LayerData {
+interface LayerProps {
+	layer: LayerData;
 	highlight: Highlight;
+	pan: PointLike;
+	zoom: number;
 }
 
 const convertCoords = (p: PointLike, pan: PointLike, zoom: number, thickness: number) => {
@@ -24,15 +27,14 @@ const convertCoords = (p: PointLike, pan: PointLike, zoom: number, thickness: nu
 	return result;
 };
 
-const Layer: React.FC<LayerProps> = ({ lines, points, highlight }) => {
-	const ctx = React.useContext(AppContext);
+const Layer: React.FC<LayerProps> = React.memo(({ layer, highlight, pan, zoom }) => {
 
 	return (
 		<>
-			<g>{lines.map((line, i) => {
+			<g>{layer.lines.map((line, i) => {
 				const thickness = line.thickness != 0 ? line.thickness : 2;
-				const from = convertCoords(points[line.from], ctx.pan, ctx.zoom, thickness);
-				const to = convertCoords(points[line.to], ctx.pan, ctx.zoom, thickness);
+				const from = convertCoords(layer.points[line.from], pan, zoom, thickness);
+				const to = convertCoords(layer.points[line.to], pan, zoom, thickness);
 				return (
 					<line
 						key={i}
@@ -48,8 +50,8 @@ const Layer: React.FC<LayerProps> = ({ lines, points, highlight }) => {
 				);
 			})}
 			</g>
-			<g>{points.map((point, i) => <ControlPoint key={i} num={i} p={point} isHighlighted={highlight?.pointNum == i}></ControlPoint>)}
+			<g>{layer.points.map((point, i) => <ControlPoint key={i} num={i} p={point} isHighlighted={highlight?.pointNum == i}></ControlPoint>)}
 			</g>
 		</>
 	);
-};
+});

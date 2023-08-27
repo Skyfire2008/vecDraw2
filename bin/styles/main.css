@@ -39,3 +39,9 @@ body {
 	font-weight: bold;
 	cursor: pointer;
 }
+
+.action-list {
+	height: 360px;
+	min-width: 300px;
+	overflow-y: scroll;
+}

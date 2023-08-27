@@ -16,14 +16,15 @@ class AddPointAction implements Action {
 
 	public undo(ctx: AppContextProps) {
 		const layer = ctx.layers[this.layer];
-		layer.points.pop();
 
 		if (AddLine.isAddLine(ctx.tool)) {
 			if (ctx.tool.activePoint == this.num) {
-				ctx.tool.activePoint = layer.points.length - 1;
+				ctx.tool.activePoint = layer.points.length - 2;
 			}
 		}
 
+		const newPoints = layer.points.slice(0, layer.points.length - 1);
+		ctx.layers[this.layer] = { points: newPoints, lines: layer.lines };
 		ctx.setLayers(ctx.layers.slice(0));
 	}
 }

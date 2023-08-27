@@ -50,11 +50,13 @@ const ActionList: React.FC<ActionListProps> = ({ actions, setActions }) => {
 
 	return (
 		<div>
-			<div>
+			<div className="line" style={{ justifyContent: "space-between" }}>
 				<div>Actions:</div>
 				<button onClick={undo}>Undo</button>
 			</div>
-			<div>{actions.map((action, i) => <ActionCompo key={i} action={action} setHighlight={ctx.setHighlight}></ActionCompo>)}</div>
+			<div className="action-list">{
+				actions.map((action, i) => <ActionCompo key={i} action={action} setHighlight={ctx.setHighlight}></ActionCompo>)
+			}</div>
 		</div>
 	);
 };

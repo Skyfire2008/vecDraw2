@@ -57,8 +57,10 @@ const VecDraw: React.FC<any> = () => {
 	const [selection, setSelection] = React.useState<Set<PointLike>>(new Set<PointLike>());
 	const [highlight, setHighlight] = React.useState<Highlight>(null);
 
-	const tools = [new Pan(), new AddLine(), new Select()];
+	const tools = React.useState([new Pan(), new AddLine(), new Select()])[0];
 	const [tool, setTool] = React.useState<Tool>(tools[0]);
+	const panTool = React.useState(tools[0])[0];
+	const forcePan = React.useRef(false);
 	const tempGroupRef = React.useRef<SVGGElement>(null);
 
 	const ctx = {
@@ -93,7 +95,7 @@ const VecDraw: React.FC<any> = () => {
 		const gridPos = new Point(Math.round(shapePos.x / gridSettings.width) * gridSettings.width, Math.round(shapePos.y / gridSettings.height) * gridSettings.height);
 		setMouseGridPos(gridPos);
 
-		tool.onMouseDown({
+		const event: MyMouseEvent = {
 			pos: coords,
 			shapePos,
 			gridPos,
@@ -101,8 +103,14 @@ const VecDraw: React.FC<any> = () => {
 			ctrlHeld: e.ctrlKey,
 			shiftHeld: e.shiftKey,
 			altHeld: e.altKey
-		},
-			ctx);
+		};
+
+		if (e.button != 1) {
+			tool.onMouseDown(event, ctx);
+		} else {
+			forcePan.current = true;
+			panTool.onMouseDown(event, ctx);
+		}
 	};
 
 	const onMouseMove = (e: React.MouseEvent) => {
@@ -113,7 +121,7 @@ const VecDraw: React.FC<any> = () => {
 		const gridPos = new Point(Math.round(shapePos.x / gridSettings.width) * gridSettings.width, Math.round(shapePos.y / gridSettings.height) * gridSettings.height);
 		setMouseGridPos(gridPos);
 
-		tool.onMouseMove({
+		const event = {
 			pos: coords,
 			shapePos,
 			gridPos,
@@ -121,8 +129,12 @@ const VecDraw: React.FC<any> = () => {
 			ctrlHeld: e.ctrlKey,
 			shiftHeld: e.shiftKey,
 			altHeld: e.altKey
-		},
-			ctx);
+		};
+
+		tool.onMouseMove(event, ctx);
+		if (forcePan.current) {
+			panTool.onMouseMove(event, ctx);
+		}
 	};
 
 	const onMouseUp = (e: React.MouseEvent) => {
@@ -133,7 +145,7 @@ const VecDraw: React.FC<any> = () => {
 		const gridPos = new Point(Math.round(shapePos.x / gridSettings.width) * gridSettings.width, Math.round(shapePos.y / gridSettings.height) * gridSettings.height);
 		setMouseGridPos(gridPos);
 
-		tool.onMouseUp({
+		const event = {
 			pos: coords,
 			shapePos,
 			gridPos,
@@ -141,8 +153,14 @@ const VecDraw: React.FC<any> = () => {
 			ctrlHeld: e.ctrlKey,
 			shiftHeld: e.shiftKey,
 			altHeld: e.altKey
-		},
-			ctx);
+		};
+
+		if (forcePan.current) {
+			panTool.onMouseUp(event, ctx);
+		} else {
+			tool.onMouseUp(event, ctx);
+		}
+		forcePan.current = false;
 	};
 
 	const onWheel = (e: React.WheelEvent) => {
@@ -206,8 +224,8 @@ const VecDraw: React.FC<any> = () => {
 					}} selected={tool}></Toolbox>
 					<div className="column">
 						<svg ref={svgRef} width={width} height={height} style={{ width, height }} onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onWheel={onWheel}>
-							<BgRect width={width} height={height}></BgRect>
-							{layers.map((layer, i) => <Layer key={i} {...layer} highlight={highlight?.layerNum == i ? highlight : null}></Layer>)}
+							<BgRect width={width} height={height} gridSettings={gridSettings} zoom={zoom} pan={pan}></BgRect>
+							{layers.map((layer, i) => <Layer key={i} layer={layer} highlight={highlight?.layerNum == i ? highlight : null} pan={pan} zoom={zoom}></Layer>)}
 							<g ref={tempGroupRef}></g>
 						</svg>
 						<div className="line">

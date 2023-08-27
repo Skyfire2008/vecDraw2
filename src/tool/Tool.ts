@@ -19,6 +19,7 @@ interface Tool {
 	onPointClick?(num: number, ctx: AppContextProps);
 	onEnable(ctx: AppContextProps);
 	onDisable(ctx: AppContextProps);
+	redraw?();
 	//onKeyDown(key: string);
 	//onKeyUp(key: string);
 }

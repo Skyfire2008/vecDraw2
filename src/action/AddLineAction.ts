@@ -30,9 +30,9 @@ class AddLineAction implements Action {
 				}
 			}
 		}
-		layer.lines.pop();
-
-
+		
+		const newLines = layer.lines.slice(0, layer.lines.length - 1);
+		ctx.layers[this.layer] = { points: layer.points, lines: newLines };
 		ctx.setLayers(ctx.layers.slice(0));
 	}
 }
