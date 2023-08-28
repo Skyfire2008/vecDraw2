@@ -3,6 +3,7 @@ interface GridSettings {
 	gridColor: string;
 	width: number;
 	height: number;
+	mark: number;
 }
 
 interface Highlight {
@@ -44,7 +45,8 @@ const VecDraw: React.FC<any> = () => {
 		bgColor: "#ffffff",
 		gridColor: "#b0c4de",
 		width: 20,
-		height: 20
+		height: 20,
+		mark: 5
 	});
 
 	const [layers, setLayers] = React.useState<Array<LayerData>>([{ points: [], lines: [] }]);
@@ -274,6 +276,10 @@ const VecDraw: React.FC<any> = () => {
 							<div>
 								<label>Grid color:</label>
 								<input type="color" value={gridSettings.gridColor} onChange={(e) => updateGridSettings({ gridColor: e.target.value })}></input>
+							</div>
+							<div>
+								<label>Mark:</label>
+								<input type="number" value={gridSettings.mark} onChange={(e) => updateGridSettings({ mark: e.target.value })}></input>
 							</div>
 						</div>
 					</div>
