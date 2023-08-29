@@ -32,7 +32,7 @@ const Layer: React.FC<LayerProps> = React.memo(({ layer, highlight, pan, zoom })
 	return (
 		<>
 			<g>{layer.lines.map((line, i) => {
-				const thickness = line.thickness != 0 ? line.thickness : 2;
+				const thickness = line.thickness != 0 ? line.thickness / zoom : 2;
 				const from = convertCoords(layer.points[line.from], pan, zoom, thickness);
 				const to = convertCoords(layer.points[line.to], pan, zoom, thickness);
 				return (

@@ -10,7 +10,7 @@ interface PreviewProps {
 	bottom: number;*/
 }
 
-const Preview: React.FC<PreviewProps> = ({ layers, width, height, bgColor/*left, right, top, bottom*/ }) => {
+const Preview: React.FC<PreviewProps> = React.memo(({ layers, width, height, bgColor }) => {
 
 	const canvasRef = React.useRef<HTMLCanvasElement>();
 
@@ -41,7 +41,7 @@ const Preview: React.FC<PreviewProps> = ({ layers, width, height, bgColor/*left,
 	const scale = Math.min(1, width / (dimensions.right - dimensions.left), height / (dimensions.bottom - dimensions.top));
 
 	const convertPoint = (p: Point, thickness: number) => {
-		thickness = Math.floor(thickness / scale);
+		thickness = thickness * scale;
 		const result = Point.subtract(p, { x: dimensions.left, y: dimensions.top });
 		result.multScalar(scale);
 		let frac = thickness / 2;
@@ -52,7 +52,6 @@ const Preview: React.FC<PreviewProps> = ({ layers, width, height, bgColor/*left,
 		return result;
 	};
 
-	//TODO: scale line thicnkess
 	React.useEffect(() => {
 		const ctx = canvasRef.current.getContext("2d");
 		ctx.lineJoin = "round";
@@ -69,7 +68,7 @@ const Preview: React.FC<PreviewProps> = ({ layers, width, height, bgColor/*left,
 				ctx.beginPath();
 				ctx.moveTo(from.x, from.y);
 				ctx.strokeStyle = line.color;
-				ctx.lineWidth = thickness;
+				ctx.lineWidth = thickness * scale;
 				ctx.lineTo(to.x, to.y);
 				ctx.stroke();
 			}
@@ -81,4 +80,4 @@ const Preview: React.FC<PreviewProps> = ({ layers, width, height, bgColor/*left,
 			<canvas ref={canvasRef} width={width} height={height}></canvas>
 		</div>
 	);
-}
+});
