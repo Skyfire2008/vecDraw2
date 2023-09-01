@@ -24,10 +24,18 @@ class AddLine implements Tool {
 
 		if (this.activePoint >= 0) {
 			const activePoint = ctx.layers[ctx.activeLayer].points[this.activePoint];
-			const thickness = ctx.lineThickness != 0 ? ctx.lineThickness : 2;
+			const thickness = ctx.lineThickness != 0 ? ctx.lineThickness * ctx.zoom : 2;
 			const p1 = convertCoords(activePoint, ctx.pan, ctx.zoom, thickness);
 			const p2 = convertCoords(e.gridPos, ctx.pan, ctx.zoom, thickness);
-			newInnerHtml = `<line x1=${p1.x} y1=${p1.y} x2=${p2.x} y2=${p2.y} stroke=${ctx.lineColor} stroke-width=${thickness}></line>` + newInnerHtml;
+			newInnerHtml = `<line 
+				x1=${p1.x} 
+				y1=${p1.y} 
+				x2=${p2.x} 
+				y2=${p2.y} 
+				stroke-linecap="round" 
+				stroke=${ctx.lineColor} 
+				stroke-width=${thickness}>
+				</line>` + newInnerHtml;
 		}
 		ctx.tempGroup.current.innerHTML = newInnerHtml;
 	}

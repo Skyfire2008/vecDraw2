@@ -1,12 +1,12 @@
 class AddPointAction implements Action {
 
 	readonly description: Array<ActionKeyWord>;
-	readonly layer: number;
+	readonly layerNum: number;
 	private num: number;
 
 	constructor(layer: number, num: number) {
 		this.description = ["Added point ", { pointNum: num }, ` on layer ${layer}`];
-		this.layer = layer;
+		this.layerNum = layer;
 		this.num = num;
 	}
 
@@ -15,7 +15,7 @@ class AddPointAction implements Action {
 	}
 
 	public undo(ctx: AppContextProps) {
-		const layer = ctx.layers[this.layer];
+		const layer = ctx.layers[this.layerNum];
 
 		if (AddLine.isAddLine(ctx.tool)) {
 			if (ctx.tool.activePoint == this.num) {
@@ -24,7 +24,7 @@ class AddPointAction implements Action {
 		}
 
 		const newPoints = layer.points.slice(0, layer.points.length - 1);
-		ctx.layers[this.layer] = { points: newPoints, lines: layer.lines };
+		ctx.layers[this.layerNum] = { points: newPoints, lines: layer.lines };
 		ctx.setLayers(ctx.layers.slice(0));
 	}
 }

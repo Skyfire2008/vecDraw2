@@ -1,14 +1,14 @@
 class AddLineAction implements Action {
 
 	readonly description: Array<ActionKeyWord>;
-	readonly layer: number;
+	readonly layerNum: number;
 	private from: number;
 	private to: number;
 	private isPointNew: boolean;
 
 	constructor(layer: number, from: number, to: number, isPointNew: boolean) {
 		this.description = ["Connected points ", { pointNum: from }, " and ", { pointNum: to }, ` on layer ${layer}`];
-		this.layer = layer;
+		this.layerNum = layer;
 		this.from = from;
 		this.to = to;
 		this.isPointNew = isPointNew;
@@ -20,7 +20,7 @@ class AddLineAction implements Action {
 
 	//TODO: probably only need to pop last point and last line
 	public undo(ctx: AppContextProps) {
-		const layer = ctx.layers[this.layer];
+		const layer = ctx.layers[this.layerNum];
 		if (this.isPointNew) {
 			layer.points.pop();
 
@@ -30,9 +30,9 @@ class AddLineAction implements Action {
 				}
 			}
 		}
-		
+
 		const newLines = layer.lines.slice(0, layer.lines.length - 1);
-		ctx.layers[this.layer] = { points: layer.points, lines: newLines };
+		ctx.layers[this.layerNum] = { points: layer.points, lines: newLines };
 		ctx.setLayers(ctx.layers.slice(0));
 	}
 }

@@ -59,7 +59,7 @@ const VecDraw: React.FC<any> = () => {
 	const [selection, setSelection] = React.useState<Set<PointLike>>(new Set<PointLike>());
 	const [highlight, setHighlight] = React.useState<Highlight>(null);
 
-	const tools = React.useState([new Pan(), new AddLine(), new Select()])[0];
+	const tools = React.useState([new Pan(), new AddLine(), new Select(), new Move()])[0];
 	const [tool, setTool] = React.useState<Tool>(tools[0]);
 	const panTool = React.useState(tools[0])[0];
 	const forcePan = React.useRef(false);
@@ -79,7 +79,10 @@ const VecDraw: React.FC<any> = () => {
 		selection,
 		setSelection,
 		tempGroup: tempGroupRef,
-		addAction: (action) => { setActions(actions.concat(action)) },
+		addAction: (action: Action) => {
+			action.do(ctx);
+			setActions(actions.concat(action))
+		},
 		setHighlight
 	};
 

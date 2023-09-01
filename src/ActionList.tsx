@@ -16,14 +16,14 @@ const ActionCompo: React.FC<ActionCompoProps> = ({ action, setHighlight }) => {
 		if ((word as any).lineNum != null) {
 			return <span key={key} className="action-highlightable" onMouseLeave={onMouseLeave} onMouseEnter={(e) => {
 				setHighlight({
-					layerNum: action.layer,
+					layerNum: action.layerNum,
 					lineNum: (word as any).lineNum
 				});
 			}}>{(word as any).lineNum}</span>;
 		} else if ((word as any).pointNum != null) {
 			return <span key={key} className="action-highlightable" onMouseLeave={onMouseLeave} onMouseEnter={(e) => {
 				setHighlight({
-					layerNum: action.layer,
+					layerNum: action.layerNum,
 					pointNum: (word as any).pointNum
 				});
 			}}>{(word as any).pointNum}</span>;
