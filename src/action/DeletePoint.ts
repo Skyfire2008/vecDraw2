@@ -21,6 +21,13 @@ class DeletePoint implements Action {
 			if (line.from == this.pointNum || line.to == this.pointNum) {
 				this.deletedLines.push(line);
 			} else {
+				//decrement line end point by 1 since removal of point shifted everything by -1
+				if (line.from > this.pointNum) {
+					line.from--;
+				}
+				if (line.to > this.pointNum) {
+					line.to--;
+				}
 				newLines.push(line);
 			}
 		}
@@ -33,6 +40,16 @@ class DeletePoint implements Action {
 		const layer = ctx.layers[ctx.activeLayer];
 
 		layer.points.splice(this.pointNum, 0, this.point);
+
+		//restore line end points that were changed during point removal
+		for (const line of layer.lines) {
+			if (line.from >= this.pointNum) {
+				line.from++;
+			}
+			if (line.to >= this.pointNum) {
+				line.to ++;
+			}
+		}
 		for (const line of this.deletedLines) {
 			layer.lines.push(line);
 		}

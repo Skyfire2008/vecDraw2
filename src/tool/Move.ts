@@ -30,13 +30,17 @@ class Move implements Tool {
 
 		//TODO: fix merge points action first(see action/MergePoints.ts TODOs)
 
-		//const targetIndex = layer.points.findIndex((p, i) => Point.equals(p, e.gridPos) && i != this.movedIndex);
+		/*const targetIndex = layer.points.findIndex((p, i) => Point.equals(p, e.gridPos) && i != this.movedIndex);
 		//if there's a point at target, merge them; otherwise - just move
-		//if (targetIndex < 0) {
-		ctx.addAction(new MovePoint(ctx.activeLayer, this.movedIndex, layer.points[this.movedIndex], this.originalPoint));
-		//} else {
-		//	ctx.addAction(new MergePoints(ctx.activeLayer, this.movedIndex, targetIndex, this.originalPoint));
-		//}
+		if (targetIndex < 0) {
+			ctx.addAction(new MovePoint(ctx.activeLayer, this.movedIndex, layer.points[this.movedIndex], this.originalPoint));
+		} else {
+			ctx.addAction(new MergePoints(ctx.activeLayer, this.movedIndex, targetIndex, this.originalPoint));
+		}*/
+
+		if (this.movedIndex > -1) {
+			ctx.addAction(new MovePoint(ctx.activeLayer, this.movedIndex, layer.points[this.movedIndex], this.originalPoint));
+		}
 		this.movedIndex = -1;
 
 	}
