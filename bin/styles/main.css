@@ -2,9 +2,22 @@ body {
 	font-family: 'Courier New', Courier, monospace;
 }
 
+input[type="number"],
+input[type=text] {
+	width: 100px;
+}
+
 .line {
 	display: flex;
 	flex-direction: row;
+}
+
+.panel {
+	align-items: baseline;
+}
+
+.panel>* {
+	margin: 0px 10px 2px 0px;
 }
 
 .column {
@@ -21,9 +34,9 @@ body {
 	pointer-events: none;
 }
 
-.toolbox {
-	display: flex;
-	flex-direction: column;
+.component-header {
+	font-weight: bold;
+	margin: 0px 0px 10px 0px;
 }
 
 .tool {

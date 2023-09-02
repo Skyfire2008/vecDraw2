@@ -7,7 +7,8 @@ interface ToolboxProps {
 
 const Toolbox: React.FC<ToolboxProps> = ({ tools, selected, select }) => {
 
-	return (<div className="toolbox">
+	return (<div className="column">
+		<div className="component-header">Tools:</div>
 		{tools.map((tool, i) =>
 			<div key={i} className={"tool" + (tool.name == selected.name ? " selected" : "")} onClick={() => select(tool)}>{tool.name}</div>
 		)}

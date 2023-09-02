@@ -50,7 +50,7 @@ const ActionList: React.FC<ActionListProps> = ({ actions, setActions }) => {
 
 	return (
 		<div>
-			<div className="line" style={{ justifyContent: "space-between" }}>
+			<div className="line component-header" style={{ justifyContent: "space-between" }}>
 				<div>Actions:</div>
 				<button onClick={undo}>Undo</button>
 			</div>

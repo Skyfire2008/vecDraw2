@@ -14,8 +14,10 @@ class Delete implements Tool {
 		if (this.deletedPoint > -1) {
 			const pos = convertCoords(e.gridPos, ctx.pan, ctx.zoom, 0);
 			ctx.tempGroup.current.innerHTML = `
-				<line class="point" stroke-linecap="round" stroke-width="2" stroke="red" x1=${pos.x - 5} y1=${pos.y - 5} x2=${pos.x + 5} y2=${pos.y + 5}></line>
-				<line class="point" stroke-linecap="round" stroke-width="2" stroke="red" x1=${pos.x + 5} y1=${pos.y - 5} x2=${pos.x - 5} y2=${pos.y + 5}></line>
+				<line class="temp-point" stroke-linecap="round" stroke-width="4" stroke="red" x1=${pos.x - 7.5} y1=${pos.y - 7.5} x2=${pos.x + 7.5} y2=${pos.y + 7.5}></line>
+				<line class="temp-point" stroke-linecap="round" stroke-width="4" stroke="red" x1=${pos.x + 7.5} y1=${pos.y - 7.5} x2=${pos.x - 7.5} y2=${pos.y + 7.5}></line>
+				<line class="temp-point" stroke-linecap="round" stroke-width="2" stroke="white" x1=${pos.x - 5} y1=${pos.y - 5} x2=${pos.x + 5} y2=${pos.y + 5}></line>
+				<line class="temp-point" stroke-linecap="round" stroke-width="2" stroke="white" x1=${pos.x + 5} y1=${pos.y - 5} x2=${pos.x - 5} y2=${pos.y + 5}></line>
 			`;
 		} else {
 			ctx.tempGroup.current.innerHTML = "";

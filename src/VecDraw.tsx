@@ -44,23 +44,24 @@ const VecDraw: React.FC<any> = () => {
 	const [gridSettings, setGridSettings] = React.useState<GridSettings>({
 		bgColor: "#ffffff",
 		gridColor: "#b0c4de",
-		width: 20,
-		height: 20,
-		mark: 5
+		width: 8,
+		height: 8,
+		mark: 4
 	});
 
 	const [layers, setLayers] = React.useState<Array<LayerData>>([{ points: [], lines: [] }]);
 	const [activeLayer, setActiveLayer] = React.useState<number>(0);
 	const [actions, setActions] = React.useState<Array<Action>>([]);
+	const [exportScale, setExportScale] = React.useState(1);
 
-	const [lineColor, setLineColor] = React.useState("#FFFFFF");
+	const [lineColor, setLineColor] = React.useState("#000000");
 	const [lineThickness, setLineThickness] = React.useState(1);
 
 	const [selection, setSelection] = React.useState<Set<PointLike>>(new Set<PointLike>());
 	const [highlight, setHighlight] = React.useState<Highlight>(null);
 
 	const tools = React.useState([new Pan(), new AddLine(), new Select(), new Move(), new Delete()])[0];
-	const [tool, setTool] = React.useState<Tool>(tools[0]);
+	const [tool, setTool] = React.useState<Tool>(tools[1]);
 	const panTool = React.useState(tools[0])[0];
 	const forcePan = React.useRef(false);
 	const tempGroupRef = React.useRef<SVGGElement>(null);
@@ -214,13 +215,45 @@ const VecDraw: React.FC<any> = () => {
 		}
 	};
 
+	const saveFile = () => {
+		const data: ShapeData = { ver: 2, layers };
+		const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
+		const a = document.createElement("a");
+		a.download = "shape.json";
+		a.href = URL.createObjectURL(blob);
+		a.addEventListener("click", (e) => setTimeout(() => URL.revokeObjectURL(a.href), 1000));
+		a.click();
+	};
+
+	const exportAsPng = () => {
+		const canvas = document.createElement("canvas");
+		drawOntoCanvas(canvas, layers, gridSettings.bgColor, exportScale);
+
+		const a = document.createElement("a");
+		a.download = "export.png";
+		canvas.toBlob((blob) => {
+			a.href = URL.createObjectURL(blob);
+			a.addEventListener("click", (e) => setTimeout(() => URL.revokeObjectURL(a.href), 1000));
+			a.click();
+		});
+	};
+
 	return (
 		<div>
 			<AppContext.Provider value={ctx}>
-				<div>
-					<label>Shape file:</label>
-					<input type="file" accept=".json" onChange={onSelectFile}></input>
+				<div className="line panel">
+					<div>
+						<label>Load file:</label>
+						<input type="file" accept=".json" onChange={onSelectFile}></input>
+					</div>
+					<button onClick={saveFile}>Save file</button>
+					<button onClick={exportAsPng}>Export as PNG</button>
+					<div>
+						<label> Export scale:</label>
+						<input type="number" min="1" step="0.5" value={exportScale} onChange={(e) => setExportScale(e.target.valueAsNumber)}></input>
+					</div>
 				</div>
+
 				<div className="line">
 					<Toolbox tools={tools} select={(newTool: Tool) => {
 						tool.onDisable(ctx);
@@ -237,58 +270,61 @@ const VecDraw: React.FC<any> = () => {
 							<div style={{ minWidth: 100 }}>{`X: ${mouseGridPos.x}`}</div>
 							<div style={{ minWidth: 100 }}>{`Y: ${mouseGridPos.y}`}</div>
 						</div>
-						<div className="line">
-							<div>
-								<label>Thickness:</label>
-								<input defaultValue={lineThickness} onBlur={(e) => setLineThickness(Number.parseInt(e.target.value))} onKeyDown={
-									(e) => {
-										if (e.key == "Enter") {
-											(e.target as HTMLElement).blur()
-										}
-									}
-								}></input>
-								<label>Color:</label>
-								<input type="color" defaultValue={lineColor} onChange={(e) => setLineColor(e.target.value)}></input>
-							</div>
-						</div>
-						<div className="line" style={{ alignItems: "baseline" }}>
-							<div>
-								<label>Grid width:</label>
-								<input defaultValue={gridSettings.width} onBlur={(e) => updateGridWidth(e.target.value)} onKeyUp={
-									(e) => {
-										if (e.key === "Enter") {
-											(e.target as HTMLElement).blur();
-										}
-									}
-								}></input>
-							</div>
-							<div>
-								<label>Grid height:</label>
-								<input defaultValue={gridSettings.height} onBlur={(e) => updateGridHeight(e.target.value)} onKeyUp={
-									(e) => {
-										if (e.key === "Enter") {
-											(e.target as HTMLElement).blur();
-										}
-									}
-								}></input>
-							</div>
-							<div>
-								<label>Bg color:</label>
-								<input type="color" value={gridSettings.bgColor} onChange={(e) => updateGridSettings({ bgColor: e.target.value })}></input>
-							</div>
-							<div>
-								<label>Grid color:</label>
-								<input type="color" value={gridSettings.gridColor} onChange={(e) => updateGridSettings({ gridColor: e.target.value })}></input>
-							</div>
-							<div>
-								<label>Mark:</label>
-								<input type="number" value={gridSettings.mark} onChange={(e) => updateGridSettings({ mark: e.target.value })}></input>
-							</div>
-						</div>
 					</div>
 					<div className="column">
 						<Preview layers={layers} width={200} height={200} bgColor={gridSettings.bgColor}></Preview>
 						<ActionList actions={actions} setActions={setActions}></ActionList>
+					</div>
+				</div>
+
+				<div className="line panel">
+					<div>
+						<label>Thickness:</label>
+						<input type="text" defaultValue={lineThickness} onBlur={(e) => setLineThickness(Number.parseInt(e.target.value))} onKeyDown={
+							(e) => {
+								if (e.key == "Enter") {
+									(e.target as HTMLElement).blur()
+								}
+							}
+						}></input>
+					</div>
+					<div>
+						<label>Color:</label>
+						<input type="color" defaultValue={lineColor} onChange={(e) => setLineColor(e.target.value)}></input>
+					</div>
+				</div>
+				<div className="line panel">
+					<div>
+						<label>Grid width:</label>
+						<input type="text" defaultValue={gridSettings.width} onBlur={(e) => updateGridWidth(e.target.value)} onKeyUp={
+							(e) => {
+								if (e.key === "Enter") {
+									(e.target as HTMLElement).blur();
+								}
+							}
+						}></input>
+					</div>
+					<div>
+						<label>Grid height:</label>
+						<input type="text" defaultValue={gridSettings.height} onBlur={(e) => updateGridHeight(e.target.value)} onKeyUp={
+							(e) => {
+								if (e.key === "Enter") {
+									(e.target as HTMLElement).blur();
+								}
+							}
+						}></input>
+					</div>
+					<div>
+						<label>Bg color:</label>
+						<input type="color" value={gridSettings.bgColor} onChange={(e) => updateGridSettings({ bgColor: e.target.value })}></input>
+					</div>
+					<div>
+						<label>Grid color:</label>
+						<input type="color" value={gridSettings.gridColor} onChange={(e) => updateGridSettings({ gridColor: e.target.value })}></input>
+					</div>
+					<div>
+						<label>Mark:</label>
+						<input type="number" value={gridSettings.mark} onChange={(e) => updateGridSettings({ mark: e.target.value })}></input>
 					</div>
 				</div>
 			</AppContext.Provider >

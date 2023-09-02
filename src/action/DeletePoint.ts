@@ -3,7 +3,7 @@ class DeletePoint implements Action {
 	readonly layerNum: number;
 	private pointNum: number;
 	private point: Point;
-	private deletedLines: Array<Line> = [];
+	private deletedLines: Array<{ line: Line, i: number }> = []; //also store their position in array to preserve order when undoing
 
 	constructor(layerNum: number, pointNum: number, point: Point) {
 		this.layerNum = layerNum;
@@ -16,10 +16,13 @@ class DeletePoint implements Action {
 		const layer = ctx.layers[ctx.activeLayer];
 
 		layer.points.splice(this.pointNum, 1);
+
 		const newLines: Array<Line> = [];
-		for (const line of layer.lines) {
+		for (let i = 0; i < layer.lines.length; i++) {
+			const line = layer.lines[i];
+
 			if (line.from == this.pointNum || line.to == this.pointNum) {
-				this.deletedLines.push(line);
+				this.deletedLines.push({ line, i });
 			} else {
 				//decrement line end point by 1 since removal of point shifted everything by -1
 				if (line.from > this.pointNum) {
@@ -39,22 +42,34 @@ class DeletePoint implements Action {
 	public undo(ctx: AppContextProps) {
 		const layer = ctx.layers[ctx.activeLayer];
 
+		//put the point back
 		layer.points.splice(this.pointNum, 0, this.point);
 
-		//restore line end points that were changed during point removal
-		for (const line of layer.lines) {
-			if (line.from >= this.pointNum) {
-				line.from++;
+		const newLines: Array<Line> = [];
+		let i = 0, j = 0;
+		for (let k = 0; k < layer.lines.length + this.deletedLines.length; k++) {
+			const line = layer.lines[i];
+			const deletedLine = this.deletedLines[j];
+
+			if (deletedLine?.i == k) {
+				//if reached position where current deleted line was, restore it
+				newLines.push(deletedLine.line);
+				j++;
+			} else {
+				//otherwise just restore line endpoints
+				if (line.from >= this.pointNum) {
+					line.from++;
+				}
+				if (line.to >= this.pointNum) {
+					line.to++;
+				}
+
+				newLines.push(line);
+				i++;
 			}
-			if (line.to >= this.pointNum) {
-				line.to ++;
-			}
-		}
-		for (const line of this.deletedLines) {
-			layer.lines.push(line);
 		}
 
-		ctx.layers[ctx.activeLayer] = { lines: layer.lines.slice(0), points: layer.points.slice(0) };
+		ctx.layers[ctx.activeLayer] = { lines: newLines, points: layer.points.slice(0) };
 		ctx.setLayers(ctx.layers.slice(0));
 	}
 }

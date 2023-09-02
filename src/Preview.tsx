@@ -19,7 +19,7 @@ const Preview: React.FC<PreviewProps> = React.memo(({ layers, width, height, bgC
 
 		for (const layer of layers) {
 			for (const line of layer.lines) {
-				const halfThickness = line.thickness > 0 ? line.thickness / 2 : 1;
+				const halfThickness = line.thickness > 0 ? line.thickness / 2 : 0.5;
 				const from = layer.points[line.from];
 				const to = layer.points[line.to];
 
@@ -77,6 +77,7 @@ const Preview: React.FC<PreviewProps> = React.memo(({ layers, width, height, bgC
 
 	return (
 		<div>
+			<div className="component-header">Preview:</div>
 			<canvas ref={canvasRef} width={width} height={height}></canvas>
 		</div>
 	);
