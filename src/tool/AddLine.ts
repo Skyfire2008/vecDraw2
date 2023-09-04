@@ -2,6 +2,7 @@
 class AddLine implements Tool {
 
 	readonly name = "AddLine";
+	private hoverPoint = -1;
 	public activePoint = -1;
 
 	constructor() { }
@@ -15,19 +16,21 @@ class AddLine implements Tool {
 
 	public onMouseMove(e: MyMouseEvent, ctx: AppContextProps) {
 
-		const pos = convertCoords(e.gridPos, ctx.pan, ctx.zoom, 0);
-		let newInnerHtml = `
-		<rect class="temp-point" x=${pos.x - 3.5} y=${pos.y - 3.5} width="7" height="7" stroke="black" fill="#00000000"></rect>
-		<rect class="temp-point" x=${pos.x - 2.5} y=${pos.y - 2.5} width="5" height="5" stroke="white" fill="none"></rect>`;
+		//if hovering over a point, attach line to it
+		const gridPos = this.hoverPoint < 0 ? e.gridPos : ctx.layers[ctx.activeLayer].points[this.hoverPoint];
 
-		//let newInnerHtml = "";
+		const pos = convertCoords(gridPos, ctx.pan, ctx.zoom, 0);
+		let newInnerHtml = `
+		<rect class="no-mouse-events" x=${pos.x - 3.5} y=${pos.y - 3.5} width="7" height="7" stroke="black" fill="#00000000"></rect>
+		<rect class="no-mouse-events" x=${pos.x - 2.5} y=${pos.y - 2.5} width="5" height="5" stroke="white" fill="none"></rect>`;
 
 		if (this.activePoint >= 0) {
 			const activePoint = ctx.layers[ctx.activeLayer].points[this.activePoint];
 			const thickness = ctx.lineThickness != 0 ? ctx.lineThickness * ctx.zoom : 2;
 			const p1 = convertCoords(activePoint, ctx.pan, ctx.zoom, thickness);
-			const p2 = convertCoords(e.gridPos, ctx.pan, ctx.zoom, thickness);
-			newInnerHtml = `<line 
+			const p2 = convertCoords(gridPos, ctx.pan, ctx.zoom, thickness);
+			newInnerHtml = `<line
+				class="no-mouse-events"
 				x1=${p1.x} 
 				y1=${p1.y} 
 				x2=${p2.x} 
@@ -43,11 +46,17 @@ class AddLine implements Tool {
 	public onMouseUp(e: MyMouseEvent, ctx: AppContextProps) {
 		const layer = ctx.layers[ctx.activeLayer];
 
-		let toPoint = layer.points.findIndex((p) => Point.equals(p, e.gridPos));
+		//if hovering over a point, use it
+		let toPoint: number;
 		let pointIsNew = false;
-		if (toPoint == -1) {
-			toPoint = layer.points.push(e.gridPos) - 1;
-			pointIsNew = true;
+		if (this.hoverPoint > -1) {
+			toPoint = this.hoverPoint;
+		} else {
+			toPoint = layer.points.findIndex((p) => Point.equals(p, e.gridPos));
+			if (toPoint == -1) {
+				toPoint = layer.points.push(e.gridPos) - 1;
+				pointIsNew = true;
+			}
 		}
 
 		if (this.activePoint >= 0) {
@@ -79,6 +88,14 @@ class AddLine implements Tool {
 		ctx.setLayers(newLayers);
 
 		this.activePoint = toPoint;
+	}
+
+	public onPointEnter(num: number, ctx: AppContextProps) {
+		this.hoverPoint = num;
+	}
+
+	public onPointLeave(num: number, ctx: AppContextProps) {
+		this.hoverPoint = -1;
 	}
 
 	public onEnable(ctx: AppContextProps) {

@@ -2,3 +2,4 @@ bin/*.js
 bin/*/*.js
 node_modules
 junk
+bin.zip

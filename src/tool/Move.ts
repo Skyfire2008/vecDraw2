@@ -3,25 +3,28 @@ class Move implements Tool {
 	readonly name = "Move";
 	private movedIndex = -1;
 	private originalPoint: Point = null;
+	private hoverPoint = false;
 
 	constructor() { }
 
 	public onMouseDown(e: MyMouseEvent, ctx: AppContextProps) {
 		const layer = ctx.layers[ctx.activeLayer];
 
-		this.movedIndex = layer.points.findIndex((p) => Point.equals(p, e.gridPos));
+		if (!this.hoverPoint) {
+			this.movedIndex = layer.points.findIndex((p) => Point.equals(p, e.gridPos));
+		}
 		if (this.movedIndex > -1) {
 			this.originalPoint = layer.points[this.movedIndex];
 		}
 	}
 
 	public onMouseMove(e: MyMouseEvent, ctx: AppContextProps) {
-		if (this.movedIndex > -1) {
+		if (this.originalPoint != null) {
 			const layer = ctx.layers[ctx.activeLayer];
 
 			layer.points[this.movedIndex] = e.gridPos;
 			ctx.layers[ctx.activeLayer] = { points: layer.points.slice(0), lines: layer.lines };
-			ctx.setLayers(ctx.layers.slice(0))
+			ctx.setLayers(ctx.layers.slice(0));
 		}
 	}
 
@@ -38,11 +41,26 @@ class Move implements Tool {
 			ctx.addAction(new MergePoints(ctx.activeLayer, this.movedIndex, targetIndex, this.originalPoint));
 		}*/
 
-		if (this.movedIndex > -1) {
+		if (this.originalPoint != null) {
 			ctx.addAction(new MovePoint(ctx.activeLayer, this.movedIndex, layer.points[this.movedIndex], this.originalPoint));
 		}
 		this.movedIndex = -1;
+		this.originalPoint = null;
+		this.hoverPoint = false;
+	}
 
+	public onPointEnter(num: number, ctx: AppContextProps) {
+		if (!this.hoverPoint) {
+			this.movedIndex = num;
+			this.hoverPoint = true;
+		}
+	}
+
+	public onPointLeave(num: number, ctx: AppContextProps) {
+		if (this.hoverPoint && this.originalPoint == null) {
+			this.movedIndex = -1;
+			this.hoverPoint = false;
+		}
 	}
 
 	public onEnable(ctx: AppContextProps) {

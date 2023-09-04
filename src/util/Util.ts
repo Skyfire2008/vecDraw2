@@ -83,7 +83,7 @@ const drawOntoCanvas = (canvas: HTMLCanvasElement, layers: Array<LayerData>, bgC
 	ctx.lineJoin = "round";
 	ctx.lineCap = "round";
 	ctx.fillStyle = bgColor;
-	ctx.fillRect(0, 0, width, height);
+	ctx.fillRect(0, 0, canvas.width, canvas.height);
 
 	//TODO: move into a separate module so this can be reused by preview
 	const convertPoint = (p: Point, thickness: number) => {
