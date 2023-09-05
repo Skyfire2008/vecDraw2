@@ -11,16 +11,25 @@ interface MyMouseEvent {
 	altHeld: boolean;
 }
 
-interface Tool {
+interface ToolOption {
 	name: string;
+	description: string;
+}
+
+interface Tool {
+	readonly name: string;
+	readonly options?: Array<ToolOption>;
+	setOptionInd?(num: number);
+	getOptionInd?(): number;
+
 	onMouseDown(e: MyMouseEvent, ctx: AppContextProps);
 	onMouseUp(e: MyMouseEvent, ctx: AppContextProps);
 	onMouseMove(e: MyMouseEvent, ctx: AppContextProps);
 	onPointClick?(num: number, ctx: AppContextProps);
 	onPointEnter?(num: number, ctx: AppContextProps);
 	onPointLeave?(num: number, ctx: AppContextProps);
-	onEnable(ctx: AppContextProps);
-	onDisable(ctx: AppContextProps);
+	onEnable?(ctx: AppContextProps);
+	onDisable?(ctx: AppContextProps);
 	redraw?();
 	//onKeyDown(key: string);
 	//onKeyUp(key: string);

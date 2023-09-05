@@ -1,11 +1,51 @@
+interface AddLinePointSelector extends ToolOption {
+	getActivePoint(): number;
+	setActivePoint(num: number);
+	onAddPoint(num: number);
+}
+
+class Polyline implements AddLinePointSelector {
+	readonly name = "Polyline";
+	readonly description = "";
+	private activePoint = -1;
+
+	constructor() { }
+
+	getActivePoint(): number {
+		return this.activePoint;
+	}
+
+	setActivePoint(num: number) {
+		this.activePoint = num;
+	}
+
+	onAddPoint(num: number) {
+		this.activePoint = num;
+	}
+}
 
 class AddLine implements Tool {
 
 	readonly name = "AddLine";
+	readonly options: Array<AddLinePointSelector> = [
+		new Polyline()
+	];
 	private hoverPoint = -1;
-	public activePoint = -1;
+	private selectorInd = 0;
+	public selector: AddLinePointSelector = this.options[this.selectorInd];
 
 	constructor() { }
+
+	public getOptionInd(): number {
+		return this.selectorInd;
+	}
+
+	public setOptionInd(num: number) {
+		//assume that num is valid
+		this.selectorInd = num;
+		this.selector = this.options[num];
+		this.selector.onAddPoint(-1);
+	}
 
 	public static isAddLine(tool: Tool): tool is AddLine {
 		return tool.name == "AddLine";
@@ -24,8 +64,8 @@ class AddLine implements Tool {
 		<rect class="no-mouse-events" x=${pos.x - 3.5} y=${pos.y - 3.5} width="7" height="7" stroke="black" fill="#00000000"></rect>
 		<rect class="no-mouse-events" x=${pos.x - 2.5} y=${pos.y - 2.5} width="5" height="5" stroke="white" fill="none"></rect>`;
 
-		if (this.activePoint >= 0) {
-			const activePoint = ctx.layers[ctx.activeLayer].points[this.activePoint];
+		if (this.selector.getActivePoint() >= 0) {
+			const activePoint = ctx.layers[ctx.activeLayer].points[this.selector.getActivePoint()];
 			const thickness = ctx.lineThickness != 0 ? ctx.lineThickness * ctx.zoom : 2;
 			const p1 = convertCoords(activePoint, ctx.pan, ctx.zoom, thickness);
 			const p2 = convertCoords(gridPos, ctx.pan, ctx.zoom, thickness);
@@ -59,35 +99,39 @@ class AddLine implements Tool {
 			}
 		}
 
-		if (this.activePoint >= 0) {
+		if (this.selector.getActivePoint() >= 0) {
 			//if this is a self-loop, abort
-			if (toPoint == this.activePoint) {
+			if (toPoint == this.selector.getActivePoint()) {
 				return;
 			}
+
 			//if a line already connects these points, update it
 			const lineIndex = layer.lines.findIndex((l) =>
-				(l.from == this.activePoint && l.to == toPoint) ||
-				(l.from == toPoint && l.to == this.activePoint));
+				(l.from == this.selector.getActivePoint() && l.to == toPoint) ||
+				(l.from == toPoint && l.to == this.selector.getActivePoint()));
+
 			if (lineIndex >= 0) {
 				const line = layer.lines[lineIndex];
 				ctx.addAction(new UpdateLineAction(ctx.activeLayer, lineIndex, line.thickness, line.color, ctx.lineThickness, ctx.lineColor));
 				line.thickness = ctx.lineThickness;
 				line.color = ctx.lineColor;
 			} else {
-				layer.lines.push({ from: this.activePoint, to: toPoint, color: ctx.lineColor, thickness: ctx.lineThickness });
-				ctx.addAction(new AddLineAction(ctx.activeLayer, this.activePoint, toPoint, pointIsNew));
+				layer.lines.push({ from: this.selector.getActivePoint(), to: toPoint, color: ctx.lineColor, thickness: ctx.lineThickness });
+				ctx.addAction(new AddLineAction(ctx.activeLayer, this.selector.getActivePoint(), toPoint, pointIsNew));
+				this.selector.onAddPoint(toPoint);
 			}
 		} else {
+			//no active point - set active point
 			if (pointIsNew) {
 				ctx.addAction(new AddPointAction(ctx.activeLayer, toPoint));
 			}
+
+			this.selector.setActivePoint(toPoint);
 		}
 
 		const newLayers = ctx.layers.slice(0);
 		newLayers[ctx.activeLayer] = { points: layer.points, lines: layer.lines };
 		ctx.setLayers(newLayers);
-
-		this.activePoint = toPoint;
 	}
 
 	public onPointEnter(num: number, ctx: AppContextProps) {
@@ -99,7 +143,7 @@ class AddLine implements Tool {
 	}
 
 	public onEnable(ctx: AppContextProps) {
-		this.activePoint = -1;
+		this.selector.setActivePoint(-1);
 	}
 
 	public onDisable(ctx: AppContextProps) {

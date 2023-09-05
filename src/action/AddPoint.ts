@@ -18,8 +18,8 @@ class AddPointAction implements Action {
 		const layer = ctx.layers[this.layerNum];
 
 		if (AddLine.isAddLine(ctx.tool)) {
-			if (ctx.tool.activePoint == this.num) {
-				ctx.tool.activePoint = layer.points.length - 2;
+			if (ctx.tool.selector.getActivePoint() == this.num) {
+				ctx.tool.selector.setActivePoint(-1);
 			}
 		}
 

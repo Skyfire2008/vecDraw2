@@ -25,8 +25,8 @@ class AddLineAction implements Action {
 			layer.points.pop();
 
 			if (AddLine.isAddLine(ctx.tool)) {
-				if (ctx.tool.activePoint == this.to) {
-					ctx.tool.activePoint = layer.points.length - 1;
+				if (ctx.tool.selector.getActivePoint() == this.to) {
+					ctx.tool.selector.setActivePoint(-1);
 				}
 			}
 		}

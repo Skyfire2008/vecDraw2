@@ -256,9 +256,9 @@ const VecDraw: React.FC<any> = () => {
 
 				<div className="line">
 					<Toolbox tools={tools} select={(newTool: Tool) => {
-						tool.onDisable(ctx);
+						tool?.onDisable(ctx);
 						setTool(newTool);
-						newTool.onEnable(ctx);
+						newTool?.onEnable(ctx);
 					}} selected={tool}></Toolbox>
 					<div className="column">
 						<svg ref={svgRef} width={width} height={height} style={{ width, height }} onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onWheel={onWheel}>
