@@ -39,13 +39,30 @@ input[type=text] {
 	margin: 0px 0px 10px 0px;
 }
 
-.tool {
+.toolbox {
+	width: 120px;
+}
+
+.tool-option {
+	padding: 0px 0px 0px 10px;
+}
+
+.tool-option.selected {
+	background-color: aquamarine;
+}
+
+/*class for both tool and tool option*/
+.tool-item {
 	user-select: none;
 	cursor: pointer;
 }
 
+.tool {
+	margin: 0px 0px 4px 0px;
+}
+
 .tool.selected {
-	background-color: aquamarine;
+	border: 2px dimgray solid;
 }
 
 .action-highlightable {

@@ -1,6 +1,6 @@
 class Delete implements Tool {
-
 	readonly name = "Delete";
+	readonly description = "Delete points";
 	private deletedPoint: number;
 	private pointHover = false;
 

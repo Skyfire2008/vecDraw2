@@ -1,6 +1,6 @@
 class Move implements Tool {
-
 	readonly name = "Move";
+	readonly description = "Move points around";
 	private movedIndex = -1;
 	private originalPoint: Point = null;
 	private hoverPoint = false;

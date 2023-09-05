@@ -18,6 +18,7 @@ interface ToolOption {
 
 interface Tool {
 	readonly name: string;
+	readonly description: string;
 	readonly options?: Array<ToolOption>;
 	setOptionInd?(num: number);
 	getOptionInd?(): number;

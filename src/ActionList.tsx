@@ -48,6 +48,17 @@ const ActionList: React.FC<ActionListProps> = ({ actions, setActions }) => {
 		}
 	}, [actions, ctx]);
 
+	React.useEffect(() => {
+		const handler = (e: KeyboardEvent) => {
+			if (e.key == "z" && e.ctrlKey) {
+				undo();
+			}
+		};
+		document.addEventListener("keydown", handler);
+
+		return () => document.removeEventListener("keydown", handler);
+	}, [undo]);
+
 	return (
 		<div>
 			<div className="line component-header" style={{ justifyContent: "space-between" }}>

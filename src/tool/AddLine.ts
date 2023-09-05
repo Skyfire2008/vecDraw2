@@ -6,7 +6,7 @@ interface AddLinePointSelector extends ToolOption {
 
 class Polyline implements AddLinePointSelector {
 	readonly name = "Polyline";
-	readonly description = "";
+	readonly description = "Add points connected consecutively";
 	private activePoint = -1;
 
 	constructor() { }
@@ -24,11 +24,54 @@ class Polyline implements AddLinePointSelector {
 	}
 }
 
+class StaticPoint implements AddLinePointSelector {
+	readonly name = "Single action point";
+	readonly description = "Add points connected to single starting point";
+	private activePoint = -1;
+
+	constructor() { }
+
+	getActivePoint(): number {
+		return this.activePoint;
+	}
+
+	setActivePoint(num: number) {
+		this.activePoint = num;
+	}
+
+	onAddPoint(num: number) {
+	}
+}
+
+class SeparateLines implements AddLinePointSelector {
+	readonly name = "Lines";
+	readonly description = "Add points connected pairwise";
+	private activePoint = -1;
+	private startPoint = true;
+
+	constructor() { }
+
+	getActivePoint(): number {
+		return this.activePoint;
+	}
+
+	setActivePoint(num: number) {
+		this.activePoint = num;
+		this.startPoint = true;
+	}
+
+	onAddPoint(num: number) {
+		this.startPoint = !this.startPoint;
+		this.activePoint = this.startPoint ? num : -1;
+	}
+}
+
 class AddLine implements Tool {
 
 	readonly name = "AddLine";
+	readonly description = "Add points connected by lines/connect existing points";
 	readonly options: Array<AddLinePointSelector> = [
-		new Polyline()
+		new Polyline(), new StaticPoint(), new SeparateLines()
 	];
 	private hoverPoint = -1;
 	private selectorInd = 0;

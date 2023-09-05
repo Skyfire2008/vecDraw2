@@ -182,8 +182,16 @@ const VecDraw: React.FC<any> = () => {
 		if (files.length > 0) {
 			const fr = new FileReader();
 			fr.addEventListener("load", () => {
-				const shape = loadShape(fr.result as string);
-				setLayers(shape.layers);
+				try {
+					const shape = loadShape(fr.result as string);
+					if (shape.layers != null) {
+						setLayers(shape.layers);
+					} else {
+						window.alert("Invalid file format");
+					}
+				} catch (e) {
+					window.alert("Invalid file format");
+				}
 			});
 
 			fr.readAsText(files[0]);
