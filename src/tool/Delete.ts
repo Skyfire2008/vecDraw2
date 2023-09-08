@@ -18,6 +18,26 @@ class Delete implements Tool {
 			this.deletedPoint = layer.points.findIndex((p) => Point.equals(p, e.gridPos));
 			if (this.deletedPoint > -1) {
 				pos = convertCoords(e.gridPos, ctx.pan, ctx.zoom, 0);
+			} else {
+
+				//if not hovering over any points, check lines
+				let lineNum = -1;
+				for (const line of layer.lines) {
+					const p0 = layer.points[line.from];
+					const p1 = layer.points[line.to];
+					const v = Point.subtract(p1, p0);
+					const foo = Point.subtract(e.shapePos, p0);
+					const proj = Point.project(foo, v);
+
+					let t = v.x != 0 ? proj.x / v.x : proj.y / v.y;
+					let dist = Number.POSITIVE_INFINITY;
+
+					if (!Number.isNaN(t)) {
+						if (t < 0) {
+							if ()
+						}
+					}
+				}
 			}
 		}
 

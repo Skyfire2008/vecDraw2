@@ -23,6 +23,27 @@ class Point implements PointLike {
 		return a.x == b.x && a.y == b.y;
 	}
 
+	public static dot(a: PointLike, b: PointLike): number {
+		return a.x * b.x + a.y * b.y;
+	}
+
+	/**
+	 * Project src onto tgt
+	 * @param src 
+	 * @param tgt 
+	 */
+	public static project(src: PointLike, tgt: PointLike): Point {
+		//result = tgt * cosA * |src| / |tgt|
+		//cosA = src*tgt / (|src|*|tgt|)
+		//result = (src*tgt)*tgt / |tgt|2
+
+		const dot = Point.dot(src, tgt);
+		let result = new Point(tgt.x, tgt.y);
+		result.multScalar(dot);
+		result.multScalar(1 / Point.dot(tgt, tgt));
+		return result;
+	}
+
 	constructor(x: number = 0, y: number = 0) {
 		this.x = x;
 		this.y = y;
