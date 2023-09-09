@@ -51,6 +51,7 @@ const ActionList: React.FC<ActionListProps> = ({ actions, setActions }) => {
 	React.useEffect(() => {
 		const handler = (e: KeyboardEvent) => {
 			if (e.key == "z" && e.ctrlKey) {
+				e.preventDefault();
 				undo();
 			}
 		};

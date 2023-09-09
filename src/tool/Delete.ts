@@ -1,7 +1,10 @@
 class Delete implements Tool {
+	private static point = "POINT";
+	private static line = "LINE";
+
 	readonly name = "Delete";
-	readonly description = "Delete points";
-	private deletedPoint: number;
+	readonly description = "Delete points and lines";
+	private deletedItem: { type: string, num: number };
 	private pointHover = false;
 
 	constructor() { }
@@ -13,16 +16,21 @@ class Delete implements Tool {
 
 		let pos: Point = null;
 		if (this.pointHover) {
-			pos = convertCoords(layer.points[this.deletedPoint], ctx.pan, ctx.zoom, 0);
+			pos = convertCoords(layer.points[this.deletedItem.num], ctx.pan, ctx.zoom, 0);
 		} else {
-			this.deletedPoint = layer.points.findIndex((p) => Point.equals(p, e.gridPos));
-			if (this.deletedPoint > -1) {
+			const pointNum = layer.points.findIndex((p) => Point.equals(p, e.gridPos));
+			if (pointNum > -1) {
 				pos = convertCoords(e.gridPos, ctx.pan, ctx.zoom, 0);
+				this.deletedItem = { type: Delete.point, num: pointNum };
 			} else {
 
 				//if not hovering over any points, check lines
-				let lineNum = -1;
-				for (const line of layer.lines) {
+				for (let i = 0; i < layer.lines.length; i++) {
+					const line = layer.lines[i];
+
+					const maxDist = line.thickness != 0 ? line.thickness : 2;
+
+					//find the projection of vector p0->v onto p0->p1
 					const p0 = layer.points[line.from];
 					const p1 = layer.points[line.to];
 					const v = Point.subtract(p1, p0);
@@ -30,11 +38,22 @@ class Delete implements Tool {
 					const proj = Point.project(foo, v);
 
 					let t = v.x != 0 ? proj.x / v.x : proj.y / v.y;
-					let dist = Number.POSITIVE_INFINITY;
 
 					if (!Number.isNaN(t)) {
+						let otherPoint: Point;
 						if (t < 0) {
-							if ()
+							otherPoint = new Point();
+						} else if (t > 1) {
+							otherPoint = v;
+						} else {
+							otherPoint = v;
+							v.multScalar(t);
+						}
+
+						if (Point.distance(otherPoint, foo) < maxDist) {
+							pos = convertCoords(Point.sum(otherPoint, p0), ctx.pan, ctx.zoom, 0);
+							this.deletedItem = { type: Delete.line, num: i };
+							break;
 						}
 					}
 				}
@@ -54,25 +73,36 @@ class Delete implements Tool {
 	}
 
 	public onMouseUp(e: MyMouseEvent, ctx: AppContextProps) {
-		if (this.deletedPoint > -1) {
-			ctx.addAction(new DeletePoint(ctx.activeLayer, this.deletedPoint, ctx.layers[ctx.activeLayer].points[this.deletedPoint]));
-			this.pointHover = false;
-			this.deletedPoint = -1;
+		if (this.deletedItem != null) {
+			switch (this.deletedItem.type) {
+				case Delete.point:
+					ctx.addAction(new DeletePoint(ctx.activeLayer, this.deletedItem.num, ctx.layers[ctx.activeLayer].points[this.deletedItem.num]));
+					this.pointHover = false;
+					break;
+				case Delete.line:
+					ctx.addAction(new DeleteLine(ctx.activeLayer, this.deletedItem.num));
+					break;
+			}
+
+			this.deletedItem = null;
 		}
 		ctx.tempGroup.current.innerHTML = "";
 	}
 
 	public onPointEnter(num: number, ctx: AppContextProps) {
-		this.deletedPoint = num;
+		this.deletedItem = { type: Delete.point, num };
 		this.pointHover = true;
 	}
 
 	public onPointLeave(num: number, ctx: AppContextProps) {
-		this.deletedPoint = -1;
+		this.deletedItem = null;
 		this.pointHover = false;
 	}
 
 	public onEnable(ctx: AppContextProps) { }
 
-	public onDisable(ctx: AppContextProps) { }
+	public onDisable(ctx: AppContextProps) {
+		this.deletedItem = null;
+		this.pointHover = false;
+	}
 }
