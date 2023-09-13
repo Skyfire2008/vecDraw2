@@ -29,6 +29,10 @@ input[type=text] {
 	cursor: pointer;
 }
 
+.stretch {
+	cursor: pointer;
+}
+
 .no-mouse-events {
 	user-select: none;
 	pointer-events: none;

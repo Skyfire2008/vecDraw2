@@ -46,8 +46,8 @@ const BgRect: React.FC<BgRectProps> = React.memo(({ width, height, gridSettings,
 		lineY++;
 	}
 
-	return (<>
+	return (<g>
 		<rect width={width} height={height} fill={gridSettings.bgColor}></rect>
 		{lines}
-	</>)
+	</g>)
 });

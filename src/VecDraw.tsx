@@ -23,8 +23,8 @@ interface AppContextProps {
 	activeLayer: number;
 	lineThickness: number;
 	lineColor: string;
-	selection: Set<PointLike>;
-	setSelection: (selection: Set<PointLike>) => void;
+	selection: Set<number>;
+	setSelection: (selection: Set<number>) => void;
 	tempGroup: React.MutableRefObject<SVGGElement>;
 	addAction: (action: Action) => void;
 	setHighlight: (highlight: Highlight) => void;
@@ -57,7 +57,22 @@ const VecDraw: React.FC<any> = () => {
 	const [lineColor, setLineColor] = React.useState("#000000");
 	const [lineThickness, setLineThickness] = React.useState(1);
 
-	const [selection, setSelection] = React.useState<Set<PointLike>>(new Set<PointLike>());
+	const [selection, setSelection] = React.useState(new Set<number>());
+	const selectionDims = React.useMemo(() => {
+		const result = { left: Number.POSITIVE_INFINITY, right: Number.NEGATIVE_INFINITY, top: Number.POSITIVE_INFINITY, bottom: Number.NEGATIVE_INFINITY };
+		const layer = layers[activeLayer];
+
+		for (const num of selection) {
+			const item = layer.points[num];
+
+			result.left = Math.min(result.left, item.x);
+			result.right = Math.max(result.right, item.x);
+			result.top = Math.min(result.top, item.y);
+			result.bottom = Math.max(result.bottom, item.y);
+		}
+
+		return result;
+	}, [selection, layers]);
 	const [highlight, setHighlight] = React.useState<Highlight>(null);
 
 	const tools = React.useState([new Pan(), new AddLine(), new Select(), new Move(), new Delete()])[0];
@@ -184,8 +199,8 @@ const VecDraw: React.FC<any> = () => {
 			fr.addEventListener("load", () => {
 				try {
 					const shape = loadShape(fr.result as string);
-					if (shape.layers != null) {
-						setLayers(shape.layers);
+					if (shape != null) {
+						setLayers(shape);
 					} else {
 						window.alert("Invalid file format");
 					}
@@ -273,6 +288,9 @@ const VecDraw: React.FC<any> = () => {
 							<BgRect width={width} height={height} gridSettings={gridSettings} zoom={zoom} pan={pan}></BgRect>
 							{layers.map((layer, i) => <Layer key={i} layer={layer} highlight={highlight?.layerNum == i ? highlight : null} pan={pan} zoom={zoom}></Layer>)}
 							<g ref={tempGroupRef}></g>
+							{selection.size > 0 &&
+								<SelectionRect dims={selectionDims} svgWidth={width} svgHeight={height}></SelectionRect>
+							}
 						</svg>
 						<div className="line">
 							<div style={{ minWidth: 100 }}>{`X: ${mouseGridPos.x}`}</div>

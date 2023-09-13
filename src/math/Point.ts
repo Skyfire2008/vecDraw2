@@ -70,6 +70,11 @@ class Point implements PointLike {
 		this.y *= other.y;
 	}
 
+	public div(other: PointLike) {
+		this.x /= other.x;
+		this.y /= other.y;
+	}
+
 	public multScalar(m: number) {
 		this.x *= m;
 		this.y *= m;

@@ -17,6 +17,14 @@ interface LayerProps {
 	zoom: number;
 }
 
+/**
+ * Converts shape coordinates to screen
+ * @param p original point
+ * @param pan screen pan
+ * @param zoom screen zoom
+ * @param thickness thickness of line attached to point(used to fix aliasing)
+ * @returns 
+ */
 const convertCoords = (p: PointLike, pan: PointLike, zoom: number, thickness: number) => {
 	let result = Point.scale(p, zoom);
 	result.add(pan);

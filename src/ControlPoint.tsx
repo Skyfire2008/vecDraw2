@@ -9,7 +9,7 @@ const ControlPoint: React.FC<ControlPointProps> = ({ num, p, isHighlighted }) =>
 
 	const pos = convertCoords(p, ctx.pan, ctx.zoom, 0);
 
-	const isSelected = ctx.selection.has(p) || isHighlighted == true;
+	const isSelected = ctx.selection.has(num) || isHighlighted == true;
 
 	const onClick = (e: React.MouseEvent) => {
 		//only stop event propagation if tool has a special method for point click
