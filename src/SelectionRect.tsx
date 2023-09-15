@@ -3,41 +3,51 @@ interface SelectionProps {
 	zoom: number;
 	svgWidth: number;
 	svgHeight: number;
+	gridWidth: number;
+	gridHeight: number;
 	selection: Set<number>;
 	layers: Array<LayerData>;
 	activeLayer: number;
 	setLayers: (layers: Array<LayerData>) => void;
 }
 
-const SelectionRect: React.FC<SelectionProps> = React.memo(({ svgWidth, svgHeight, pan, zoom, selection, layers, setLayers, activeLayer }) => {
-
-	//TODO: update dims when new points added/removed from selection
-	const [dims, setDims] = React.useState<{ left: number, right: number, top: number, bottom: number }>(() => {
-		const result = { left: Number.POSITIVE_INFINITY, right: Number.NEGATIVE_INFINITY, top: Number.POSITIVE_INFINITY, bottom: Number.NEGATIVE_INFINITY };
+const SelectionRect: React.FC<SelectionProps> = React.memo(({ svgWidth, svgHeight, gridWidth, gridHeight, pan, zoom, selection, layers, setLayers, activeLayer }) => {
+	const [dims, setDims] = React.useState<{ left: number, right: number, top: number, bottom: number }>(null);
+	const prevLayer = React.useRef<LayerData>(null);
+	const prevSelection = React.useRef<Set<number>>(null);
+	if (layers[activeLayer] != prevLayer.current || selection != prevSelection.current) {
 		const layer = layers[activeLayer];
 
+		const newDims = { left: Number.POSITIVE_INFINITY, right: Number.NEGATIVE_INFINITY, top: Number.POSITIVE_INFINITY, bottom: Number.NEGATIVE_INFINITY };
 		for (const num of selection) {
 			const item = layer.points[num];
 
-			result.left = Math.min(result.left, item.x);
-			result.right = Math.max(result.right, item.x);
-			result.top = Math.min(result.top, item.y);
-			result.bottom = Math.max(result.bottom, item.y);
+			newDims.left = Math.min(newDims.left, item.x);
+			newDims.right = Math.max(newDims.right, item.x);
+			newDims.top = Math.min(newDims.top, item.y);
+			newDims.bottom = Math.max(newDims.bottom, item.y);
 		}
 
-		return result;
-	});
+		setDims(newDims);
+		prevLayer.current = layer;
+		prevSelection.current = selection;
+	}
 
 	//prevents from updating with stale state in function
 	const guard = React.useRef(true);
 	guard.current = true;
 
-	const pos = convertCoords({ x: dims.left, y: dims.top }, pan, zoom, 1);
-	const width = zoom * (dims.right - dims.left);
-	const height = zoom * (dims.bottom - dims.top);
-
 	const [isTransforming, setIsTransforming] = React.useState(false);
 	const referencePoint = React.useRef<PointLike>(null);
+
+	let pos: Point = null;
+	let width = 0;
+	let height = 0;
+	if (dims != null) {
+		pos = convertCoords({ x: dims.left, y: dims.top }, pan, zoom, 1);
+		width = zoom * (dims.right - dims.left);
+		height = zoom * (dims.bottom - dims.top);
+	}
 
 	const onStretchMouseDown = (newReferencePoint: PointLike, e: React.MouseEvent) => {
 		e.bubbles = false;
@@ -51,6 +61,7 @@ const SelectionRect: React.FC<SelectionProps> = React.memo(({ svgWidth, svgHeigh
 		e.bubbles = false;
 		e.stopPropagation();
 		setIsTransforming(false);
+		//TODO: create action
 	}
 
 	const onOverlayMouseMove = (e: React.MouseEvent) => {
@@ -66,6 +77,8 @@ const SelectionRect: React.FC<SelectionProps> = React.memo(({ svgWidth, svgHeigh
 		const rect = (e.target as HTMLElement).getBoundingClientRect();
 		const d = Point.subtract({ x: e.clientX, y: e.clientY }, Point.sum(pan, { x: rect.x, y: rect.y }));
 		d.multScalar(1 / zoom);
+		d.x = Math.round(d.x / gridWidth) * gridWidth;
+		d.y = Math.round(d.y / gridHeight) * gridHeight;
 
 		const scaling = new Point(Math.abs(d.x - referencePoint.current.x), Math.abs(d.y - referencePoint.current.y));
 		scaling.div({ x: width, y: height });
@@ -99,7 +112,7 @@ const SelectionRect: React.FC<SelectionProps> = React.memo(({ svgWidth, svgHeigh
 		guard.current = false;
 	}
 
-	return (
+	return (dims != null &&
 		<g>
 			<rect
 				x={pos.x}

@@ -277,6 +277,8 @@ const VecDraw: React.FC<any> = () => {
 								<SelectionRect
 									svgWidth={width}
 									svgHeight={height}
+									gridWidth={gridSettings.width}
+									gridHeight={gridSettings.height}
 									pan={pan}
 									zoom={zoom}
 									layers={layers}
