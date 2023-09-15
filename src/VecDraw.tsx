@@ -283,6 +283,10 @@ const VecDraw: React.FC<any> = () => {
 									zoom={zoom}
 									layers={layers}
 									setLayers={setLayers}
+									addAction={(action: Action) => {
+										action.do(ctx);
+										setActions(actions.concat(action))
+									}}
 									activeLayer={activeLayer}
 									selection={selection}
 								></SelectionRect>

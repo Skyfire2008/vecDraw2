@@ -55,6 +55,10 @@ class Point implements PointLike {
 		this.y = y;
 	}
 
+	public clone(): Point {
+		return new Point(this.x, this.y);
+	}
+
 	public add(other: PointLike) {
 		this.x += other.x;
 		this.y += other.y;

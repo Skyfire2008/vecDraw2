@@ -9,13 +9,21 @@ interface SelectionProps {
 	layers: Array<LayerData>;
 	activeLayer: number;
 	setLayers: (layers: Array<LayerData>) => void;
+	addAction: (action: Action) => void;
 }
 
-const SelectionRect: React.FC<SelectionProps> = React.memo(({ svgWidth, svgHeight, gridWidth, gridHeight, pan, zoom, selection, layers, setLayers, activeLayer }) => {
+const SelectionRect: React.FC<SelectionProps> = React.memo(({ svgWidth, svgHeight, gridWidth, gridHeight, pan, zoom, selection, layers, setLayers, addAction, activeLayer }) => {
 	const [dims, setDims] = React.useState<{ left: number, right: number, top: number, bottom: number }>(null);
 	const prevLayer = React.useRef<LayerData>(null);
 	const prevSelection = React.useRef<Set<number>>(null);
-	if (layers[activeLayer] != prevLayer.current || selection != prevSelection.current) {
+	const origPositions = React.useRef<Map<number, Point>>(null);
+
+	const [isTransforming, setIsTransforming] = React.useState(false);
+	const referencePoint = React.useRef<PointLike>(null);
+
+	//if layers or selection changed, calculate dims and save original positions
+	//also check for isTranforming cause if it's true, selection is being actively transformed and dims/original position don't need to be recalculated
+	if ((layers[activeLayer] != prevLayer.current || selection != prevSelection.current) && !isTransforming) {
 		const layer = layers[activeLayer];
 
 		const newDims = { left: Number.POSITIVE_INFINITY, right: Number.NEGATIVE_INFINITY, top: Number.POSITIVE_INFINITY, bottom: Number.NEGATIVE_INFINITY };
@@ -31,14 +39,16 @@ const SelectionRect: React.FC<SelectionProps> = React.memo(({ svgWidth, svgHeigh
 		setDims(newDims);
 		prevLayer.current = layer;
 		prevSelection.current = selection;
+
+		origPositions.current = new Map<number, Point>();
+		for (const num of selection) {
+			origPositions.current.set(num, layer.points[num].clone());
+		}
 	}
 
 	//prevents from updating with stale state in function
 	const guard = React.useRef(true);
 	guard.current = true;
-
-	const [isTransforming, setIsTransforming] = React.useState(false);
-	const referencePoint = React.useRef<PointLike>(null);
 
 	let pos: Point = null;
 	let width = 0;
@@ -62,6 +72,15 @@ const SelectionRect: React.FC<SelectionProps> = React.memo(({ svgWidth, svgHeigh
 		e.stopPropagation();
 		setIsTransforming(false);
 		//TODO: create action
+
+		const layer = layers[activeLayer];
+		const newPositions = new Map<number, Point>();
+		for (const num of selection) {
+			newPositions.set(num, layer.points[num].clone());
+		}
+
+		addAction(new ScalePoints(activeLayer, origPositions.current, newPositions));
+		origPositions.current = newPositions;
 	}
 
 	const onOverlayMouseMove = (e: React.MouseEvent) => {

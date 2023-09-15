@@ -1,6 +1,6 @@
 class Select implements Tool {
-	readonly name = "Select";
-	readonly description = "NOT IMPLEMENTED";
+	readonly name = "Transform";
+	readonly description = "Select and transform the selection";
 	private startPos: PointLike;
 	private startShapePos: PointLike;
 
