@@ -103,9 +103,7 @@ class AddLine implements Tool {
 		const gridPos = this.hoverPoint < 0 ? e.gridPos : ctx.layers[ctx.activeLayer].points[this.hoverPoint];
 
 		const pos = convertCoords(gridPos, ctx.pan, ctx.zoom, 0);
-		let newInnerHtml = `
-		<rect class="no-mouse-events" x=${pos.x - 3.5} y=${pos.y - 3.5} width="7" height="7" stroke="black" fill="#00000000"></rect>
-		<rect class="no-mouse-events" x=${pos.x - 2.5} y=${pos.y - 2.5} width="5" height="5" stroke="white" fill="none"></rect>`;
+		let newInnerHtml = `<use href="#point" class="no-mouse-events" x=${pos.x} y=${pos.y}></use>`;
 
 		if (this.selector.getActivePoint() >= 0) {
 			const activePoint = ctx.layers[ctx.activeLayer].points[this.selector.getActivePoint()];

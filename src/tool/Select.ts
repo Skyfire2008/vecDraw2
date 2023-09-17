@@ -36,7 +36,7 @@ class Select implements Tool {
 			y1 = this.startShapePos.y;
 		}
 
-		//ctrl - add, shift - remove
+		//shift - add, ctrl - remove
 		let selection = new Set<number>();
 		if (e.ctrlHeld || e.shiftHeld) {
 			for (const item of ctx.selection) {
@@ -49,7 +49,7 @@ class Select implements Tool {
 			const point = points[i];
 
 			if (point.x > x0 && point.x <= x1 && point.y > y0 && point.y <= y1) {
-				if (!e.shiftHeld) {
+				if (!e.ctrlHeld) {
 					selection.add(i);
 				} else {
 					selection.delete(i);
@@ -77,7 +77,26 @@ class Select implements Tool {
 		}
 	}
 
-	public onPointClick(num: number, ctx: AppContextProps) { }
+	public onPointClick(num: number, ctx: AppContextProps, ctrlHeld: boolean, shiftHeld: boolean) {
+		const selection = new Set<number>();
+		if (ctrlHeld || shiftHeld) {
+			for (const item of ctx.selection) {
+				selection.add(item);
+			}
+		}
+
+		if (!ctrlHeld) {
+			selection.add(num);
+		} else {
+			selection.delete(num);
+		}
+		ctx.setSelection(selection);
+
+		//cleanup
+		this.startPos = null;
+		ctx.tempGroup.current.innerHTML = "";
+		this.startShapePos = null;
+	}
 
 	public onEnable(ctx: AppContextProps) { }
 

@@ -24,6 +24,9 @@ class AddLineAction implements Action {
 		if (this.isPointNew) {
 			layer.points.pop();
 
+			//INFO: this doesn't update react state and relies on components needing layer data to update
+			ctx.selection.delete(this.to);
+
 			if (AddLine.isAddLine(ctx.tool)) {
 				if (ctx.tool.selector.getActivePoint() == this.to) {
 					ctx.tool.selector.setActivePoint(-1);

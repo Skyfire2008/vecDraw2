@@ -23,6 +23,9 @@ class AddPointAction implements Action {
 			}
 		}
 
+		//INFO: this doesn't update react state and relies on components needing layer data to update
+		ctx.selection.delete(this.num);
+
 		const newPoints = layer.points.slice(0, layer.points.length - 1);
 		ctx.layers[this.layerNum] = { points: newPoints, lines: layer.lines };
 		ctx.setLayers(ctx.layers.slice(0));

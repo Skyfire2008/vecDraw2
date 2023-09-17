@@ -14,7 +14,7 @@ const ControlPoint: React.FC<ControlPointProps> = ({ num, p, isHighlighted }) =>
 	const onClick = (e: React.MouseEvent) => {
 		//only stop event propagation if tool has a special method for point click
 		if (ctx.tool.onPointClick != null) {
-			ctx.tool.onPointClick(num, ctx);
+			ctx.tool.onPointClick(num, ctx, e.ctrlKey, e.shiftKey);
 			e.bubbles = false;
 			e.stopPropagation();
 		}
@@ -39,8 +39,7 @@ const ControlPoint: React.FC<ControlPointProps> = ({ num, p, isHighlighted }) =>
 				<circle cx={pos.x} cy={pos.y} r="14" stroke="black" fill="none"></circle>
 				<circle cx={pos.x} cy={pos.y} r="12" stroke="white" fill="none"></circle>
 			</>}
-			<rect className="point" x={pos.x - 3.5} y={pos.y - 3.5} width="7" height="7" stroke="black" fill="#00000000"></rect>
-			<rect className="point" x={pos.x - 2.5} y={pos.y - 2.5} width="5" height="5" stroke="white" fill="none"></rect>
+			<use href="#point" x={pos.x} y={pos.y}></use>
 		</g>
 	);
 };

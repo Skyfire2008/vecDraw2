@@ -26,7 +26,7 @@ interface Tool {
 	onMouseDown(e: MyMouseEvent, ctx: AppContextProps);
 	onMouseUp(e: MyMouseEvent, ctx: AppContextProps);
 	onMouseMove(e: MyMouseEvent, ctx: AppContextProps);
-	onPointClick?(num: number, ctx: AppContextProps);
+	onPointClick?(num: number, ctx: AppContextProps, ctrlHeld: boolean, shiftHeld: boolean);
 	onPointEnter?(num: number, ctx: AppContextProps);
 	onPointLeave?(num: number, ctx: AppContextProps);
 	onEnable?(ctx: AppContextProps);

@@ -71,7 +71,6 @@ const SelectionRect: React.FC<SelectionProps> = React.memo(({ svgWidth, svgHeigh
 		e.bubbles = false;
 		e.stopPropagation();
 		setIsTransforming(false);
-		//TODO: create action
 
 		const layer = layers[activeLayer];
 		const newPositions = new Map<number, Point>();
@@ -85,50 +84,53 @@ const SelectionRect: React.FC<SelectionProps> = React.memo(({ svgWidth, svgHeigh
 
 	const onOverlayMouseMove = (e: React.MouseEvent) => {
 		//updating component will set guard=true, if component not updated, skip event
-		if (!guard.current) {
-			return;
+		if (guard.current) {
+
+			e.bubbles = false;
+			e.stopPropagation();
+
+			//TODO: use VecDraw's methods to do this, somehow
+			const rect = (e.target as HTMLElement).getBoundingClientRect();
+			const d = Point.subtract({ x: e.clientX, y: e.clientY }, Point.sum(pan, { x: rect.x, y: rect.y }));
+			d.multScalar(1 / zoom);
+			d.x = Math.round(d.x / gridWidth) * gridWidth;
+			d.y = Math.round(d.y / gridHeight) * gridHeight;
+
+			const scaling = new Point(Math.abs(d.x - referencePoint.current.x), Math.abs(d.y - referencePoint.current.y));
+			scaling.div({ x: dims.right - dims.left, y: dims.bottom - dims.top });
+
+			//skip if no scaling occured
+			if (scaling.x != 1 || scaling.y != 1) {
+
+				//set new dimensions
+				const newDims = Object.assign({}, dims);
+				if (referencePoint.current.x == dims.left) {
+					newDims.right += d.x - newDims.right;
+				} else {
+					newDims.left -= newDims.left - d.x;
+				}
+				if (referencePoint.current.y == dims.top) {
+					newDims.bottom += d.y - newDims.bottom;
+				} else {
+					newDims.top -= newDims.top - d.y;
+				}
+				setDims(newDims);
+
+				const layer = layers[activeLayer];
+				for (const num of selection) {
+					const point = layer.points[num];
+					point.sub(referencePoint.current);
+					point.mult(scaling);
+					point.add(referencePoint.current);
+				}
+
+				layers[activeLayer] = { lines: layer.lines, points: layer.points.slice(0) };
+				setLayers(layers.slice(0));
+				setDims(newDims);
+
+				guard.current = false;
+			}
 		}
-
-		e.bubbles = false;
-		e.stopPropagation();
-
-		//TODO: use VecDraw's methods to do this, somehow
-		const rect = (e.target as HTMLElement).getBoundingClientRect();
-		const d = Point.subtract({ x: e.clientX, y: e.clientY }, Point.sum(pan, { x: rect.x, y: rect.y }));
-		d.multScalar(1 / zoom);
-		d.x = Math.round(d.x / gridWidth) * gridWidth;
-		d.y = Math.round(d.y / gridHeight) * gridHeight;
-
-		const scaling = new Point(Math.abs(d.x - referencePoint.current.x), Math.abs(d.y - referencePoint.current.y));
-		scaling.div({ x: width, y: height });
-
-		//set new dimensions
-		const newDims = Object.assign({}, dims);
-		if (referencePoint.current.x == dims.left) {
-			newDims.right += d.x - newDims.right;
-		} else {
-			newDims.left -= newDims.left - d.x;
-		}
-		if (referencePoint.current.y == dims.top) {
-			newDims.bottom += d.y - newDims.bottom;
-		} else {
-			newDims.top -= newDims.top - d.y;
-		}
-		setDims(newDims);
-
-		const layer = layers[activeLayer];
-		for (const num of selection) {
-			const point = layer.points[num];
-			point.sub(referencePoint.current);
-			point.mult(scaling);
-			point.add(referencePoint.current);
-		}
-
-		layers[activeLayer] = { lines: layer.lines, points: layer.points.slice(0) };
-		setLayers(layers.slice(0));
-		setDims(newDims);
-
-		guard.current = false;
 	}
 
 	return (dims != null &&
