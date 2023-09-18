@@ -113,3 +113,36 @@ const drawOntoCanvas = (canvas: HTMLCanvasElement, layers: Array<LayerData>, bgC
 		}
 	}
 }
+
+const segmentIntersection = (p0: PointLike, p1: PointLike, q0: PointLike, q1: PointLike) => {
+	const v = Point.subtract(p1, p0);
+	const u = Point.subtract(q1, q0);
+
+	const bar = u.x * v.y - v.x * u.y;
+	const foo = v.x * (q0.y - p0.y) + v.y * (p0.x - q0.x);
+	const s = foo / bar;
+	if (s > 0 && s < 1) {
+		if (v.x != 0) {
+			const t = (u.x * s + q0.x - p0.x) / v.x;
+			if (t > 0 && t < 1) {
+				const result = Point.scale(v, t);
+				result.add(p0);
+				return result;
+			}
+		} else { //special case for p0.x==p1.x cause calculating t causes division by 0 
+			const result = Point.scale(u, s);
+			result.add(q0);
+			if (p0.y < p1.y) {
+				if (p0.y < result.y && result.y < p1.y) {
+					return result;
+				}
+			} else {
+				if (p1.y < result.y && result.y < p0.y) {
+					return result;
+				}
+			}
+		}
+	}
+
+	return null;
+}
