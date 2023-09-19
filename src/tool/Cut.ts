@@ -1,10 +1,15 @@
+interface CutType {
+	lineNum: number,
+	point: Point
+}
+
 class Cut implements Tool {
 	readonly name = "Cut";
 	readonly description = "Adds new points to line on intersection";
 	private cutting = false;
 	private startPos: Point;
 	private endPos: Point;
-	private intersections: Array<{ lineNum: number, point: Point }>;
+	private intersections: Array<CutType>;
 
 	constructor() { }
 
@@ -51,7 +56,7 @@ class Cut implements Tool {
 	}
 
 	public onMouseUp(e: MyMouseEvent, ctx: AppContextProps) {
-		const layer = ctx.layers[ctx.activeLayer];
+		/*const layer = ctx.layers[ctx.activeLayer];
 
 		//TODO: add action instead
 		for (const intersection of this.intersections) {
@@ -62,7 +67,9 @@ class Cut implements Tool {
 			layer.lines.push({ from: pointNum, to: temp, color: line.color, thickness: line.thickness });
 		}
 		ctx.layers[ctx.activeLayer] = { points: layer.points, lines: layer.lines };
-		ctx.setLayers(ctx.layers.slice(0));
+		ctx.setLayers(ctx.layers.slice(0));*/
+
+		ctx.addAction(new CutLine(ctx.activeLayer, this.intersections));
 
 		//cleanup
 		ctx.tempGroup.current.innerHTML = "";
