@@ -14,6 +14,8 @@ interface SelectionProps {
 
 const SelectionRect: React.FC<SelectionProps> = React.memo(({ svgWidth, svgHeight, gridWidth, gridHeight, pan, zoom, selection, layers, setLayers, addAction, activeLayer }) => {
 	const [dims, setDims] = React.useState<{ left: number, right: number, top: number, bottom: number }>(null);
+	const prevDims = React.useRef<{ left: number, right: number, top: number, bottom: number }>(null);
+	const prevScaling = React.useRef<Point>(null);
 	const prevLayer = React.useRef<LayerData>(null);
 	const prevSelection = React.useRef<Set<number>>(null);
 	const origPositions = React.useRef<Map<number, Point>>(null);
@@ -64,6 +66,8 @@ const SelectionRect: React.FC<SelectionProps> = React.memo(({ svgWidth, svgHeigh
 		e.stopPropagation();
 
 		referencePoint.current = newReferencePoint;
+		prevDims.current = dims;
+		prevScaling.current = new Point(1, 1);
 		setIsTransforming(true);
 	}
 
@@ -96,63 +100,56 @@ const SelectionRect: React.FC<SelectionProps> = React.memo(({ svgWidth, svgHeigh
 			d.x = Math.round(d.x / gridWidth) * gridWidth;
 			d.y = Math.round(d.y / gridHeight) * gridHeight;
 
-			const scaling = new Point(Math.abs(d.x - referencePoint.current.x), Math.abs(d.y - referencePoint.current.y));
-			scaling.div({ x: dims.right - dims.left, y: dims.bottom - dims.top });
+			const scaling = new Point(d.x - referencePoint.current.x, d.y - referencePoint.current.y);
+			//if ref point to the right of dragged point, multiply scaling by -1 cause otherwise scaling will be mirrored, same for to the top
+			if (referencePoint.current.x == prevDims.current.right) {
+				scaling.x *= -1;
+			}
+			if (referencePoint.current.y == prevDims.current.bottom) {
+				scaling.y *= -1;
+			}
+			scaling.div({ x: prevDims.current.right - prevDims.current.left, y: prevDims.current.bottom - prevDims.current.top });
 
 			//skip if no scaling occured
-			if (scaling.x != 1 || scaling.y != 1) {
+			if (!Point.equals(scaling, prevScaling.current)) {
 
 				//set new dimensions
 				const newDims = Object.assign({}, dims);
-				if (referencePoint.current.x == dims.left) {
+				if (referencePoint.current.x == prevDims.current.left) {
 					newDims.right += d.x - newDims.right;
 				} else {
 					newDims.left -= newDims.left - d.x;
 				}
-				if (referencePoint.current.y == dims.top) {
+				if (referencePoint.current.y == prevDims.current.top) {
 					newDims.bottom += d.y - newDims.bottom;
 				} else {
 					newDims.top -= newDims.top - d.y;
 				}
 				setDims(newDims);
 
+				//scale original points to prevent error accumulation
 				const layer = layers[activeLayer];
-				for (const num of selection) {
-					const point = layer.points[num];
+				for (const [num, origPoint] of origPositions.current) {
+					const point = origPoint.clone();
 					point.sub(referencePoint.current);
 					point.mult(scaling);
 					point.add(referencePoint.current);
+					layers[activeLayer].points[num] = point;
 				}
 
 				layers[activeLayer] = { lines: layer.lines, points: layer.points.slice(0) };
 				setLayers(layers.slice(0));
-				setDims(newDims);
 
 				guard.current = false;
+				prevScaling.current = scaling;
 			}
 		}
 	}
 
 	return (dims != null &&
 		<g>
-			<rect
-				x={pos.x}
-				y={pos.y}
-				width={width}
-				height={height}
-				stroke="black"
-				strokeWidth="1"
-				fill="none"
-			></rect>
-			<rect
-				x={pos.x + 1}
-				y={pos.y + 1}
-				width={width - 2}
-				height={height - 2}
-				stroke="white"
-				strokeWidth="1"
-				fill="none"
-			></rect>
+			<path d={`M ${pos.x} ${pos.y} l 0 ${height} l ${width} 0 l 0 ${-height} l ${-width} 0`} stroke="white" strokeWidth="3" fill="none"></path>
+			<path d={`M ${pos.x} ${pos.y} l 0 ${height} l ${width} 0 l 0 ${-height} l ${-width} 0`} stroke="black" strokeWidth="1" fill="none"></path>
 			<use
 				href="#stretch"
 				x={pos.x}

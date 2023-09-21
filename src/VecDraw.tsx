@@ -172,8 +172,14 @@ const VecDraw: React.FC<any> = () => {
 	const onWheel = (e: React.WheelEvent) => {
 		if (e.deltaY < 0) {
 			setZoom(zoom * 2);
+			pan.sub({ x: width / 2, y: height / 2 });
+			pan.multScalar(2);
+			setPan(Point.sum(pan, { x: width / 2, y: height / 2 }));
 		} else if (zoom > 1) {
 			setZoom(zoom / 2);
+			pan.sub({ x: width / 2, y: height / 2 });
+			pan.multScalar(1 / 2);
+			setPan(Point.sum(pan, { x: width / 2, y: height / 2 }));
 		}
 	}
 
