@@ -146,10 +146,22 @@ const SelectionRect: React.FC<SelectionProps> = React.memo(({ svgWidth, svgHeigh
 		}
 	}
 
+	React.useEffect(() => {
+		const handler = (e: KeyboardEvent) => {
+			if (e.key == "Delete") {
+				addAction(new DeleteSelection(activeLayer, selection));
+			}
+		};
+
+		document.addEventListener("keydown", handler);
+
+		return () => document.removeEventListener("keydown", handler);
+	}, []);
+
 	return (dims != null &&
 		<g>
-			<path d={`M ${pos.x} ${pos.y} l 0 ${height} l ${width} 0 l 0 ${-height} l ${-width} 0`} stroke="white" strokeWidth="3" fill="none"></path>
-			<path d={`M ${pos.x} ${pos.y} l 0 ${height} l ${width} 0 l 0 ${-height} l ${-width} 0`} stroke="black" strokeWidth="1" fill="none"></path>
+			<path d={`M ${pos.x} ${pos.y} l 0 ${height} l ${width} 0 l 0 ${-height} l ${-width} 0`} stroke="black" strokeWidth="3" fill="none"></path>
+			<path d={`M ${pos.x} ${pos.y} l 0 ${height} l ${width} 0 l 0 ${-height} l ${-width} 0`} stroke="white" strokeWidth="1" fill="none"></path>
 			<use
 				href="#stretch"
 				x={pos.x}
