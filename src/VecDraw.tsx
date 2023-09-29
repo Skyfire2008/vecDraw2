@@ -326,7 +326,12 @@ const VecDraw: React.FC<any> = () => {
 					</div>
 					<div>
 						<label>Color:</label>
-						<input type="color" defaultValue={lineColor} onChange={(e) => setLineColor(e.target.value)}></input>
+						<input type="color" defaultValue={lineColor} onChange={(e) => {
+							if (selection.size > 0) {
+								ctx.addAction(new ChangeSelectionProperties(activeLayer, selection, lineThickness, lineColor));
+							}
+							setLineColor(e.target.value);
+						}}></input>
 					</div>
 				</div>
 				<div className="line panel">

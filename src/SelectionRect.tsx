@@ -156,7 +156,7 @@ const SelectionRect: React.FC<SelectionProps> = React.memo(({ svgWidth, svgHeigh
 		document.addEventListener("keydown", handler);
 
 		return () => document.removeEventListener("keydown", handler);
-	}, []);
+	}, [selection]);
 
 	return (dims != null &&
 		<g>
