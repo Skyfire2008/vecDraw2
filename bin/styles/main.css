@@ -14,7 +14,7 @@ input[type=text] {
 }
 
 .panel {
-	align-items: baseline;
+	align-items: center;
 }
 
 .panel>* {
@@ -79,4 +79,25 @@ input[type=text] {
 	height: 360px;
 	min-width: 300px;
 	overflow-y: scroll;
+}
+
+.palette {
+	margin: 2px 4px;
+	border: 2px inset lightgray;
+	width: 12px;
+	background-clip: content-box;
+	height: 10px;
+	cursor: pointer;
+}
+
+.palette.selected:after {
+	left: -6px;
+	top: -6px;
+	position: relative;
+	display: block;
+	content: "";
+	width: 12px;
+	padding: 3px;
+	height: 10px;
+	border: 3px solid;
 }
