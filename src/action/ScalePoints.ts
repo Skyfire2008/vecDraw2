@@ -18,7 +18,7 @@ class ScalePoints implements Action {
 			layer.points[num] = point;
 		}
 
-		ctx.layers[ctx.activeLayer] = { lines: layer.lines, points: layer.points };
+		ctx.layers[ctx.activeLayer] = { lines: layer.lines, polygons: layer.polygons, points: layer.points };
 		ctx.setLayers(ctx.layers.slice(0));
 	}
 
@@ -29,7 +29,7 @@ class ScalePoints implements Action {
 			layer.points[num] = point;
 		}
 
-		ctx.layers[ctx.activeLayer] = { lines: layer.lines, points: layer.points };
+		ctx.layers[ctx.activeLayer] = { lines: layer.lines, polygons: layer.polygons, points: layer.points };
 		ctx.setLayers(ctx.layers.slice(0));
 	}
 }

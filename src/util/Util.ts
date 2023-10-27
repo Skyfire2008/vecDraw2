@@ -1,6 +1,6 @@
 interface ShapeData {
 	ver: number;
-	layers: Array<{ points: Array<PointLike>, lines: Array<Line> }>;
+	layers: Array<{ points: Array<PointLike>, lines: Array<Line>, polygons: Array<Polygon> }>;
 }
 
 interface OldPoint {
@@ -30,10 +30,10 @@ const loadShape = (shapeString: string): Array<LayerData> => {
 		const lines: Array<Line> = json.lines.map((l) => {
 			return { from: l.from, to: l.to, thickness: 0, color: json.points[l.from].color };
 		});
-		return [{ points, lines }];
+		return [{ points, lines, polygons: [] }];
 	} else {
 		return json.layers.map((layer) => {
-			return { lines: layer.lines, points: layer.points.map((p) => new Point(p.x, p.y)) }
+			return { lines: layer.lines, polygons: layer.polygons, points: layer.points.map((p) => new Point(p.x, p.y)) }
 		})
 	}
 }
@@ -43,7 +43,7 @@ const drawOntoCanvas = (canvas: HTMLCanvasElement, layers: Array<LayerData>, bgC
 	//scale the fucking layers first!!!
 	const scaledLayers: Array<LayerData> = [];
 	for (const layer of layers) {
-		const newLayer: LayerData = { points: [], lines: [] };
+		const newLayer: LayerData = { points: [], lines: [], polygons: [] };
 		for (const line of layer.lines) {
 			newLayer.lines.push(Object.assign({}, line, { thickness: line.thickness * scale }));
 		}

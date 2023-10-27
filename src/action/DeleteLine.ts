@@ -14,7 +14,7 @@ class DeleteLine implements Action {
 		const layer = ctx.layers[this.layerNum];
 
 		this.deletedLine = layer.lines.splice(this.lineNum, 1)[0];
-		ctx.layers[this.layerNum] = { lines: layer.lines.slice(0), points: layer.points };
+		ctx.layers[this.layerNum] = { lines: layer.lines.slice(0), polygons: layer.polygons, points: layer.points };
 		ctx.setLayers(ctx.layers.slice(0));
 	}
 
@@ -22,7 +22,7 @@ class DeleteLine implements Action {
 		const layer = ctx.layers[this.layerNum];
 
 		layer.lines.splice(this.lineNum, 0, this.deletedLine);
-		ctx.layers[this.layerNum] = { lines: layer.lines.slice(0), points: layer.points };
+		ctx.layers[this.layerNum] = { lines: layer.lines.slice(0), polygons: layer.polygons, points: layer.points };
 		ctx.setLayers(ctx.layers.slice(0));
 	}
 }

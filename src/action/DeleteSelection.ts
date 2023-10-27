@@ -1,3 +1,4 @@
+//TODO: update for polygons
 class DeleteSelection implements Action {
 	readonly description: Array<ActionKeyWord>;
 	readonly layerNum: number;
@@ -42,7 +43,7 @@ class DeleteSelection implements Action {
 			}
 		}
 
-		ctx.layers[this.layerNum] = { points: newPoints, lines: newLines };
+		ctx.layers[this.layerNum] = { points: newPoints, polygons: layer.polygons, lines: newLines };
 		ctx.setLayers(ctx.layers.slice(0));
 		ctx.setSelection(new Set<number>());
 	}
@@ -70,7 +71,7 @@ class DeleteSelection implements Action {
 		const newLines: Array<Line> = [];
 		delInd = 0;
 		oldInd = 0;
-		for (let i = 0; i < layer.lines.length + this.deletedLines.length; i++){
+		for (let i = 0; i < layer.lines.length + this.deletedLines.length; i++) {
 			const delLine = this.deletedLines[delInd];
 
 			if (delLine?.num == i) {
@@ -84,7 +85,7 @@ class DeleteSelection implements Action {
 			}
 		}
 
-		ctx.layers[this.layerNum] = { points: newPoints, lines: newLines };
+		ctx.layers[this.layerNum] = { points: newPoints, polygons: layer.polygons, lines: newLines };
 		ctx.setLayers(ctx.layers.slice(0));
 		ctx.setSelection(this.selection);
 	}

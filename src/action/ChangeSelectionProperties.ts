@@ -1,3 +1,4 @@
+//TODO: update for polygons
 class ChangeSelectionProperties implements Action {
 
 	readonly description: Array<ActionKeyWord>;
@@ -34,7 +35,7 @@ class ChangeSelectionProperties implements Action {
 			}
 		}
 
-		ctx.layers[this.layerNum] = { lines: layer.lines, points: layer.points };
+		ctx.layers[this.layerNum] = { lines: layer.lines, polygons: layer.polygons, points: layer.points };
 		ctx.setLayers(ctx.layers.slice(0));
 	}
 
@@ -45,7 +46,7 @@ class ChangeSelectionProperties implements Action {
 			layer.lines[ind] = line;
 		}
 
-		ctx.layers[this.layerNum] = { lines: layer.lines, points: layer.points };
+		ctx.layers[this.layerNum] = { lines: layer.lines, polygons: layer.polygons, points: layer.points };
 		ctx.setLayers(ctx.layers.slice(0));
 	}
 }

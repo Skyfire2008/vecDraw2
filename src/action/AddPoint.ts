@@ -27,7 +27,7 @@ class AddPointAction implements Action {
 		ctx.selection.delete(this.num);
 
 		const newPoints = layer.points.slice(0, layer.points.length - 1);
-		ctx.layers[this.layerNum] = { points: newPoints, lines: layer.lines };
+		ctx.layers[this.layerNum] = { points: newPoints, polygons: layer.polygons, lines: layer.lines };
 		ctx.setLayers(ctx.layers.slice(0));
 	}
 }

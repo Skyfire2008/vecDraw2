@@ -29,7 +29,7 @@ class UpdateLineAction implements Action {
 		layer.lines[this.lineNum].color = this.prevColor;
 
 		const newLayers = ctx.layers.slice(0);
-		newLayers[this.layerNum] = { lines: layer.lines, points: layer.points };
+		newLayers[this.layerNum] = { lines: layer.lines, polygons: layer.polygons, points: layer.points };
 		ctx.setLayers(newLayers);
 	}
 }

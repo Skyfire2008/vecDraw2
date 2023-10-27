@@ -49,7 +49,7 @@ const VecDraw: React.FC<any> = () => {
 		mark: 4
 	});
 
-	const [layers, setLayers] = React.useState<Array<LayerData>>([{ points: [], lines: [] }]);
+	const [layers, setLayers] = React.useState<Array<LayerData>>([{ points: [], lines: [], polygons: [] }]);
 	const [activeLayer, setActiveLayer] = React.useState<number>(0);
 	const [actions, setActions] = React.useState<Array<Action>>([]);
 	const [exportScale, setExportScale] = React.useState(1);

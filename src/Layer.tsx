@@ -5,9 +5,15 @@ interface Line {
 	color: string;
 }
 
+interface Polygon {
+	points: Array<number>;
+	color: string;
+}
+
 interface LayerData {
 	points: Array<Point>;
 	lines: Array<Line>;
+	polygons: Array<Polygon>;
 }
 
 interface LayerProps {

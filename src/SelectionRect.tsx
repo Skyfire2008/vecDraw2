@@ -137,7 +137,7 @@ const SelectionRect: React.FC<SelectionProps> = React.memo(({ svgWidth, svgHeigh
 					layers[activeLayer].points[num] = point;
 				}
 
-				layers[activeLayer] = { lines: layer.lines, points: layer.points.slice(0) };
+				layers[activeLayer] = { lines: layer.lines, polygons: layer.polygons, points: layer.points.slice(0) };
 				setLayers(layers.slice(0));
 
 				guard.current = false;

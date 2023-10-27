@@ -17,7 +17,7 @@ class MovePoint implements Action {
 		const layer = ctx.layers[this.layerNum];
 
 		layer.points[this.point] = this.pos;
-		ctx.layers[this.layerNum] = { points: layer.points.slice(0), lines: layer.lines };
+		ctx.layers[this.layerNum] = { points: layer.points.slice(0), polygons: layer.polygons, lines: layer.lines };
 		ctx.setLayers(ctx.layers.slice(0));
 	}
 
@@ -25,7 +25,7 @@ class MovePoint implements Action {
 		const layer = ctx.layers[this.layerNum];
 
 		layer.points[this.point] = this.prevPos;
-		ctx.layers[this.layerNum] = { points: layer.points.slice(0), lines: layer.lines };
+		ctx.layers[this.layerNum] = { points: layer.points.slice(0), polygons: layer.polygons, lines: layer.lines };
 		ctx.setLayers(ctx.layers.slice(0));
 	}
 }

@@ -23,7 +23,7 @@ class Move implements Tool {
 			const layer = ctx.layers[ctx.activeLayer];
 
 			layer.points[this.movedIndex] = e.gridPos;
-			ctx.layers[ctx.activeLayer] = { points: layer.points.slice(0), lines: layer.lines };
+			ctx.layers[ctx.activeLayer] = { points: layer.points.slice(0), polygons: layer.polygons, lines: layer.lines };
 			ctx.setLayers(ctx.layers.slice(0));
 		}
 	}

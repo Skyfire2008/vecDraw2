@@ -35,7 +35,7 @@ class AddLineAction implements Action {
 		}
 
 		const newLines = layer.lines.slice(0, layer.lines.length - 1);
-		ctx.layers[this.layerNum] = { points: layer.points, lines: newLines };
+		ctx.layers[this.layerNum] = { points: layer.points, polygons: layer.polygons, lines: newLines };
 		ctx.setLayers(ctx.layers.slice(0));
 	}
 }

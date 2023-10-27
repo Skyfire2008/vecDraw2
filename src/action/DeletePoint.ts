@@ -1,3 +1,4 @@
+//TODO: update polygons
 class DeletePoint implements Action {
 	readonly description: Array<ActionKeyWord>;
 	readonly layerNum: number;
@@ -35,7 +36,7 @@ class DeletePoint implements Action {
 			}
 		}
 
-		ctx.layers[ctx.activeLayer] = { lines: newLines, points: layer.points.slice(0) };
+		ctx.layers[ctx.activeLayer] = { lines: newLines, polygons: layer.polygons, points: layer.points.slice(0) };
 		ctx.setLayers(ctx.layers.slice(0));
 	}
 
@@ -69,7 +70,7 @@ class DeletePoint implements Action {
 			}
 		}
 
-		ctx.layers[ctx.activeLayer] = { lines: newLines, points: layer.points.slice(0) };
+		ctx.layers[ctx.activeLayer] = { lines: newLines, polygons: layer.polygons, points: layer.points.slice(0) };
 		ctx.setLayers(ctx.layers.slice(0));
 	}
 }

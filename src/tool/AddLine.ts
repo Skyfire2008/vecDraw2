@@ -171,7 +171,7 @@ class AddLine implements Tool {
 		}
 
 		const newLayers = ctx.layers.slice(0);
-		newLayers[ctx.activeLayer] = { points: layer.points, lines: layer.lines };
+		newLayers[ctx.activeLayer] = { points: layer.points, polygons: layer.polygons, lines: layer.lines };
 		ctx.setLayers(newLayers);
 	}
 
