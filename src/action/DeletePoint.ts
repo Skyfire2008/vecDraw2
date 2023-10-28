@@ -1,10 +1,10 @@
-//TODO: update polygons
 class DeletePoint implements Action {
 	readonly description: Array<ActionKeyWord>;
 	readonly layerNum: number;
 	private pointNum: number;
 	private point: Point;
 	private deletedLines: Array<{ line: Line, i: number }> = []; //also store their position in array to preserve order when undoing
+	private deletedPolygons: Array<{ i: number, polygon: Polygon, deleted: boolean }> = [];
 
 	constructor(layerNum: number, pointNum: number, point: Point) {
 		this.layerNum = layerNum;
@@ -36,7 +36,35 @@ class DeletePoint implements Action {
 			}
 		}
 
-		ctx.layers[ctx.activeLayer] = { lines: newLines, polygons: layer.polygons, points: layer.points.slice(0) };
+		//filter the deleted point from polygons
+		const newPolygons: Array<Polygon> = [];
+		for (let i = 0; i < layer.polygons.length; i++) {
+			const polygon = layer.polygons[i];
+			const newPolygon: Polygon = { color: polygon.color, points: [] };
+
+			let changed = false;
+			for (const point of polygon.points) {
+				if (point > this.pointNum) {
+					newPolygon.points.push(point - 1);
+					changed = true;
+				} else if (point != this.pointNum) {
+					newPolygon.points.push(point);
+					changed = true;
+				}
+			}
+
+			if (changed) {
+				//TODO: maybe make that 3 points?
+				//if polygon has less than 2 points remaining, it's deleted completely
+				this.deletedPolygons.push({ i, polygon, deleted: newPolygon.points.length < 2 });
+			}
+
+			if (newPolygon.points.length >= 2) {
+				newPolygons.push(newPolygon);
+			}
+		}
+
+		ctx.layers[ctx.activeLayer] = { lines: newLines, polygons: newPolygons, points: layer.points.slice(0) };
 		ctx.setLayers(ctx.layers.slice(0));
 	}
 
@@ -70,7 +98,18 @@ class DeletePoint implements Action {
 			}
 		}
 
-		ctx.layers[ctx.activeLayer] = { lines: newLines, polygons: layer.polygons, points: layer.points.slice(0) };
+		const newPolygons: Array<Polygon> = layer.polygons.slice(0);
+		let offset = 0;
+		for (const polygon of this.deletedPolygons) {
+			if (!polygon.deleted) {
+				newPolygons[polygon.i - offset] = polygon.polygon;
+			} else {
+				newPolygons.splice(polygon.i - offset, 0, polygon.polygon);
+				offset++;
+			}
+		}
+
+		ctx.layers[ctx.activeLayer] = { lines: newLines, polygons: newPolygons, points: layer.points.slice(0) };
 		ctx.setLayers(ctx.layers.slice(0));
 	}
 }

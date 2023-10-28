@@ -33,6 +33,16 @@ const Preview: React.FC<PreviewProps> = React.memo(({ layers, width, height, bgC
 				result.top = Math.min(result.top, minY);
 				result.bottom = Math.max(result.bottom, maxY);
 			}
+
+			for (const polygon of layer.polygons) {
+				for (const pointNum of polygon.points) {
+					const point = layer.points[pointNum];
+					result.left = Math.min(result.left, point.x);
+					result.right = Math.max(result.right, point.x);
+					result.top = Math.min(result.top, point.y);
+					result.bottom = Math.max(result.bottom, point.y);
+				}
+			}
 		}
 
 		return result;
@@ -60,6 +70,20 @@ const Preview: React.FC<PreviewProps> = React.memo(({ layers, width, height, bgC
 		ctx.fillRect(0, 0, width, height);
 
 		for (const layer of layers) {
+
+			for (const polygon of layer.polygons) {
+				ctx.beginPath();
+				ctx.fillStyle = polygon.color;
+				const startPoint = convertPoint(layer.points[polygon.points[0]], 0);
+				ctx.moveTo(startPoint.x, startPoint.y)
+				for (let i = 1; i < polygon.points.length; i++) {
+					const pointNum = polygon.points[i];
+					const point = convertPoint(layer.points[pointNum], 0);
+					ctx.lineTo(point.x, point.y);
+				}
+				ctx.fill();
+			}
+
 			for (const line of layer.lines) {
 				const thickness = line.thickness > 0 ? line.thickness : 1;
 				const from = convertPoint(layer.points[line.from], thickness);

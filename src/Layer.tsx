@@ -45,6 +45,19 @@ const Layer: React.FC<LayerProps> = React.memo(({ layer, highlight, pan, zoom })
 
 	return (
 		<>
+			<g>{layer.polygons.map((polygon, i) => {
+				let points = "";
+				for (const p of polygon.points) {
+					const converted = convertCoords(layer.points[p], pan, zoom, 0);
+					points += converted.x + "," + converted.y + " ";
+				}
+				return (<polygon
+					key={i}
+					points={points}
+					style={{ fill: polygon.color }}>
+				</polygon>);
+
+			})}</g>
 			<g>{layer.lines.map((line, i) => {
 				const thickness = line.thickness != 0 ? line.thickness * zoom : 2;
 				const from = convertCoords(layer.points[line.from], pan, zoom, thickness);
