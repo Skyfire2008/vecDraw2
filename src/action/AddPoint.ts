@@ -3,15 +3,24 @@ class AddPointAction implements Action {
 	readonly description: Array<ActionKeyWord>;
 	readonly layerNum: number;
 	private num: number;
+	private point: Point;
 
-	constructor(layer: number, num: number) {
-		this.description = ["Added point ", { pointNum: num }, ` on layer ${layer}`];
+	constructor(layer: number, point: Point) {
+		//TODO: pointnum
+		this.description = ["Added point ", { pointNum: 0 }, ` on layer ${layer}`];
 		this.layerNum = layer;
-		this.num = num;
+		this.point = point;
 	}
 
 	public do(ctx: AppContextProps) {
-		//do nothing
+		const layer = ctx.layers[this.layerNum];
+
+		this.num = layer.points.length;
+		layer.points.push(this.point);
+
+		const newLayers = ctx.layers.slice(0);
+		newLayers[this.layerNum] = Object.assign({}, layer);
+		ctx.setLayers(newLayers);
 	}
 
 	public undo(ctx: AppContextProps) {

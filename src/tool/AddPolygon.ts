@@ -3,6 +3,8 @@ class AddPolygon implements Tool {
 	readonly name = "AddPolygon";
 	readonly description = "Add a polygon";
 
+	private polygonNum: number;
+
 	constructor() {
 
 	}
@@ -23,5 +25,9 @@ class AddPolygon implements Tool {
 	}
 
 	public onPointClick(num: number, ctx: AppContextProps, ctrlHeld: boolean, shiftHeld: boolean) {
+	}
+
+	public onEnable(ctx: AppContextProps) {
+		this.polygonNum = ctx.layers[ctx.activeLayer].polygons.length;
 	}
 }

@@ -8,11 +8,9 @@ class UpdateLineAction implements Action {
 	private thickness: number;
 	private color: string;
 
-	constructor(layer: number, lineNum: number, prevThickness: number, prevColor: string, thickness: number, color: string) {
+	constructor(layer: number, lineNum: number, thickness: number, color: string) {
 		this.layerNum = layer;
 		this.lineNum = lineNum;
-		this.prevThickness = prevThickness;
-		this.prevColor = prevColor;
 		this.thickness = thickness;
 		this.color = color;
 
@@ -20,7 +18,17 @@ class UpdateLineAction implements Action {
 	}
 
 	public do(ctx: AppContextProps) {
-		//do nothing
+		const layer = ctx.layers[this.layerNum];
+		const line = layer.lines[this.lineNum];
+		this.prevThickness = line.thickness;
+		this.prevColor = line.color;
+
+		line.thickness = this.thickness;
+		line.color = this.color;
+
+		const newLayers = ctx.layers.slice(0);
+		newLayers[this.layerNum] = Object.assign({}, layer);
+		ctx.setLayers(ctx.layers.slice(0));
 	}
 
 	public undo(ctx: AppContextProps) {
@@ -29,7 +37,7 @@ class UpdateLineAction implements Action {
 		layer.lines[this.lineNum].color = this.prevColor;
 
 		const newLayers = ctx.layers.slice(0);
-		newLayers[this.layerNum] = { lines: layer.lines, polygons: layer.polygons, points: layer.points };
+		newLayers[this.layerNum] = Object.assign({}, layer);
 		ctx.setLayers(newLayers);
 	}
 }

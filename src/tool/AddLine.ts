@@ -135,7 +135,7 @@ class AddLine implements Tool {
 		} else {
 			toPoint = layer.points.findIndex((p) => Point.equals(p, e.gridPos));
 			if (toPoint == -1) {
-				toPoint = layer.points.push(e.gridPos) - 1;
+				toPoint = layer.points.length;
 				pointIsNew = true;
 			}
 		}
@@ -152,27 +152,19 @@ class AddLine implements Tool {
 				(l.from == toPoint && l.to == this.selector.getActivePoint()));
 
 			if (lineIndex >= 0) {
-				const line = layer.lines[lineIndex];
-				ctx.addAction(new UpdateLineAction(ctx.activeLayer, lineIndex, line.thickness, line.color, ctx.lineThickness, ctx.lineColor));
-				line.thickness = ctx.lineThickness;
-				line.color = ctx.lineColor;
+				ctx.addAction(new UpdateLineAction(ctx.activeLayer, lineIndex, ctx.lineThickness, ctx.lineColor));
 			} else {
-				layer.lines.push({ from: this.selector.getActivePoint(), to: toPoint, color: ctx.lineColor, thickness: ctx.lineThickness });
-				ctx.addAction(new AddLineAction(ctx.activeLayer, this.selector.getActivePoint(), toPoint, pointIsNew));
+				ctx.addAction(new AddLineAction(ctx.activeLayer, this.selector.getActivePoint(), pointIsNew ? e.gridPos : toPoint, ctx.lineThickness, ctx.lineColor));
 				this.selector.onAddPoint(toPoint);
 			}
 		} else {
 			//no active point - set active point
 			if (pointIsNew) {
-				ctx.addAction(new AddPointAction(ctx.activeLayer, toPoint));
+				ctx.addAction(new AddPointAction(ctx.activeLayer, e.gridPos));
 			}
 
 			this.selector.setActivePoint(toPoint);
 		}
-
-		const newLayers = ctx.layers.slice(0);
-		newLayers[ctx.activeLayer] = { points: layer.points, polygons: layer.polygons, lines: layer.lines };
-		ctx.setLayers(newLayers);
 	}
 
 	public onPointEnter(num: number, ctx: AppContextProps) {
