@@ -60,7 +60,7 @@ const VecDraw: React.FC<any> = () => {
 	const [selection, setSelection] = React.useState(new Set<number>());
 	const [highlight, setHighlight] = React.useState<Highlight>(null);
 
-	const tools = React.useState([new Pan(), new AddLine(), new Select(), new Move(), new Delete(), new Cut()])[0];
+	const tools = React.useState([new Pan(), new AddLine(), new AddPolygon(), new Select(), new Move(), new Delete(), new Cut()])[0];
 	const [tool, setTool] = React.useState<Tool>(tools[1]);
 	const panTool = React.useState(tools[0])[0];
 	const forcePan = React.useRef(false);

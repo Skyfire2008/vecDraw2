@@ -27,18 +27,7 @@ class Cut implements Tool {
 
 			const endPos = this.endPos != null ? this.endPos : e.gridPos;
 
-			const p1 = convertCoords(this.startPos, ctx.pan, ctx.zoom, 1);
-			const p2 = convertCoords(endPos, ctx.pan, ctx.zoom, 1);
-			ctx.tempGroup.current.innerHTML = `<line
-			class="no-mouse-events"
-			x1=${p1.x} 
-			y1=${p1.y} 
-			x2=${p2.x} 
-			y2=${p2.y} 
-			stroke-linecap="round" 
-			stroke="#ff0000" 
-			stroke-width=${1}>
-			</line>`;
+			let newInnerHtml = AddLine.drawLineToHtml(this.startPos, endPos, ctx, 1, "#ff0000");
 
 			const layer = ctx.layers[ctx.activeLayer];
 
@@ -49,25 +38,17 @@ class Cut implements Tool {
 				if (intersection != null) {
 					this.intersections.push({ lineNum: i, point: intersection });
 					const foo = convertCoords(intersection, ctx.pan, ctx.zoom, 0);
-					ctx.tempGroup.current.innerHTML += `<use href="#point" class="no-mouse-events" x=${foo.x} y=${foo.y}></use>`;
+					newInnerHtml += `<use href="#point" class="no-mouse-events" x=${foo.x} y=${foo.y}></use>`;
 				}
 			}
+
+			window.requestAnimationFrame(() => {
+				ctx.tempGroup.current.innerHTML = newInnerHtml;
+			});
 		}
 	}
 
 	public onMouseUp(e: MyMouseEvent, ctx: AppContextProps) {
-		/*const layer = ctx.layers[ctx.activeLayer];
-
-		//TODO: add action instead
-		for (const intersection of this.intersections) {
-			const pointNum = layer.points.push(intersection.point) - 1;
-			const line = layer.lines[intersection.lineNum];
-			const temp = line.to;
-			layer.lines[intersection.lineNum].to = pointNum;
-			layer.lines.push({ from: pointNum, to: temp, color: line.color, thickness: line.thickness });
-		}
-		ctx.layers[ctx.activeLayer] = { points: layer.points, lines: layer.lines };
-		ctx.setLayers(ctx.layers.slice(0));*/
 
 		ctx.addAction(new CutLine(ctx.activeLayer, this.intersections));
 

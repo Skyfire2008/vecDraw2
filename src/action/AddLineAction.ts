@@ -1,6 +1,6 @@
 class AddLineAction implements Action {
 
-	private static isPoint(p: Point | number): p is Point {
+	public static isPoint(p: Point | number): p is Point {
 		return p instanceof Point;
 	}
 

@@ -77,6 +77,30 @@ class AddLine implements Tool {
 	private selectorInd = 0;
 	public selector: AddLinePointSelector = this.options[this.selectorInd];
 
+	/**
+	 * Generates html for temporary line
+	 * @param from from point index
+	 * @param to to point index
+	 * @param ctx app context
+	 * @param thickness line thickness
+	 * @param color line color
+	 */
+	public static drawLineToHtml(from: PointLike, to: PointLike, ctx: AppContextProps, thickness: number, color: string): string {
+		const p1 = convertCoords(from, ctx.pan, ctx.zoom, thickness);
+		const p2 = convertCoords(to, ctx.pan, ctx.zoom, thickness);
+
+		return `<line
+		class="no-mouse-events"
+		x1=${p1.x} 
+		y1=${p1.y} 
+		x2=${p2.x} 
+		y2=${p2.y} 
+		stroke-linecap="round" 
+		stroke=${color} 
+		stroke-width=${thickness}>
+		</line>`;
+	}
+
 	constructor() { }
 
 	public getOptionInd(): number {
@@ -91,7 +115,7 @@ class AddLine implements Tool {
 	}
 
 	public static isAddLine(tool: Tool): tool is AddLine {
-		return tool.name == "AddLine";
+		return tool.name == AddLine.name;
 	}
 
 	public onMouseDown(e: MyMouseEvent, ctx: AppContextProps) {
@@ -108,20 +132,12 @@ class AddLine implements Tool {
 		if (this.selector.getActivePoint() >= 0) {
 			const activePoint = ctx.layers[ctx.activeLayer].points[this.selector.getActivePoint()];
 			const thickness = ctx.lineThickness != 0 ? ctx.lineThickness * ctx.zoom : 2;
-			const p1 = convertCoords(activePoint, ctx.pan, ctx.zoom, thickness);
-			const p2 = convertCoords(gridPos, ctx.pan, ctx.zoom, thickness);
-			newInnerHtml = `<line
-				class="no-mouse-events"
-				x1=${p1.x} 
-				y1=${p1.y} 
-				x2=${p2.x} 
-				y2=${p2.y} 
-				stroke-linecap="round" 
-				stroke=${ctx.lineColor} 
-				stroke-width=${thickness}>
-				</line>` + newInnerHtml;
+			newInnerHtml = AddLine.drawLineToHtml(activePoint, gridPos, ctx, thickness, ctx.lineColor) + newInnerHtml;
 		}
-		ctx.tempGroup.current.innerHTML = newInnerHtml;
+
+		window.requestAnimationFrame(() => {
+			ctx.tempGroup.current.innerHTML = newInnerHtml;
+		});
 	}
 
 	public onMouseUp(e: MyMouseEvent, ctx: AppContextProps) {
