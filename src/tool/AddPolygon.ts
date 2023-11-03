@@ -1,11 +1,80 @@
+interface AddPolygonOption extends ToolOption {
+	/**
+	 * To be called on Add/Expand PolygonAction do
+	 * @param points points of polygon
+	 * @param point new point to be added
+	 */
+	do(points: Array<number>, point: number): void;
+	undo(): void;
+}
+
+class TriangleFan implements AddPolygonOption {
+	public readonly name = "Triangle Fan";
+	public readonly description = "New points are connected to previous and starting point";
+	private readonly activePoints: Array<number>;
+
+	constructor(activePoints: Array<number>) {
+		this.activePoints = activePoints;
+	}
+
+	public do(points: Array<number>, point: number) {
+		if (points == null || points.length < 2) {
+			this.activePoints.push(point);
+		} else {
+			if (point != null) {
+				points.push(point);
+			}
+			this.activePoints[1] = point;
+		}
+	}
+
+	public undo() {
+		
+	}
+}
+
+class TriangleStrip implements AddPolygonOption {
+	public readonly name = "Triangle Strip";
+	public readonly description = "New points are connected to 2 previous points";
+	private readonly activePoints: Array<number>;
+
+	constructor(activePoints: Array<number>) {
+		this.activePoints = activePoints;
+	}
+
+	public do(points: Array<number>, point: number) {
+		if (points == null || points.length < 2) {
+			this.activePoints.push(point);
+		} else {
+			if (point != null) {
+				if (points.length % 2 == 0) {
+					points.push(point);
+				} else {
+					points.unshift(points.pop());
+					points.push(point);
+				}
+			}
+			this.activePoints.push(point);
+			this.activePoints.shift();
+		}
+	}
+
+	public undo() { }
+}
+
+
 class AddPolygon implements Tool {
 
 	readonly name = "AddPolygon";
 	readonly description = "Add a polygon";
-
+	private readonly activePoints: Array<number> = [];
 	private polygonNum: number = -1;
-	private activePoints: Array<number> = [];
+
 	private hoverPoint = -1;
+
+	readonly options = [new TriangleFan(this.activePoints), new TriangleStrip(this.activePoints)];
+	private optionInd = 0;
+	private option = this.options[this.optionInd];
 
 	public static isAddPolygon(tool: Tool): tool is AddPolygon {
 		return tool.name == AddPolygon.name;
@@ -13,6 +82,15 @@ class AddPolygon implements Tool {
 
 	constructor() {
 
+	}
+
+	public getOptionInd(): number {
+		return this.optionInd;
+	}
+
+	public setOptionInd(num: number) {
+		this.optionInd = num;
+		this.option = this.options[this.optionInd];
 	}
 
 	public onMouseDown(e: MyMouseEvent, ctx: AppContextProps) {
@@ -56,46 +134,42 @@ class AddPolygon implements Tool {
 			}
 		}
 
-		if (this.activePoints.length == 0) {//if no active points, just create a point
-			if (pointIsNew) {
-				ctx.addAction(new AddPointAction(ctx.activeLayer, e.gridPos));
+		if (this.activePoints.length < 2) {//if less than 2 active points, just create a point
+
+			//prevent self-loops...
+			if (this.activePoints.indexOf(toPoint) < 0) {
+				if (pointIsNew) {
+					ctx.addAction(new AddPointAction(ctx.activeLayer, e.gridPos));
+				}
+				this.activePoints.push(toPoint);
 			}
+		} else {//otherwise, create or expand polygon
 
-			this.activePoints[0] = toPoint;
-
-		} else if (this.activePoints.length == 1) { //if 1 active point - create line
-
-			//skip if self-loop
-			if (toPoint == this.activePoints[0]) {
-				return;
-			}
-
-			//if a line already connects these points, update it
-			const lineIndex = layer.lines.findIndex((l) =>
-				(l.from == this.activePoints[0] && l.to == toPoint) ||
-				(l.from == toPoint && l.to == this.activePoints[0]));
-
-			//TODO: do not add a line here
-			if (lineIndex >= 0) {
-				ctx.addAction(new UpdateLineAction(ctx.activeLayer, lineIndex, ctx.lineThickness, ctx.lineColor));
-			} else {
-				ctx.addAction(new AddLineAction(ctx.activeLayer, this.activePoints[0], pointIsNew ? e.gridPos : toPoint, ctx.lineThickness, ctx.lineColor));
-			}
-
-			this.activePoints[1] = toPoint;
-		} else {
-
-			//create polygon
 			if (this.polygonNum < 0) {
-				const points = pointIsNew ? this.activePoints : [this.activePoints[0], toPoint, this.activePoints[1]];
-				this.polygonNum = layer.polygons.length;
-				ctx.addAction(new AddPolygonAction(ctx.activeLayer, ctx.lineColor, points, pointIsNew ? e.gridPos : null));
+				if (pointIsNew) {
+					//if point is new, just create a polygon
+					this.polygonNum = layer.polygons.length;
+					ctx.addAction(new AddPolygonAction(ctx.activeLayer, ctx.lineColor, this.activePoints, this.option, e.gridPos));
+				} else {
+					//otherwise, check that no self-loop occurs
+					if (this.activePoints.indexOf(toPoint) < 0) {
+						const points = [this.activePoints[0], this.activePoints[1], toPoint];
+						this.polygonNum = layer.polygons.length;
+						ctx.addAction(new AddPolygonAction(ctx.activeLayer, ctx.lineColor, points, this.option));
+					}
+				}
 			} else {
-				ctx.addAction(new ExpandPolygon(ctx.activeLayer, this.polygonNum, pointIsNew ? e.gridPos : toPoint));
-			}
 
-			this.activePoints.push(toPoint);
-			this.activePoints.shift();
+				if (pointIsNew) {
+					ctx.addAction(new ExpandPolygon(ctx.activeLayer, this.polygonNum, e.gridPos, this.option));
+				} else {
+					const polygon = layer.polygons[this.polygonNum];
+					if (polygon.points.indexOf(toPoint) < 0) {
+						ctx.addAction(new ExpandPolygon(ctx.activeLayer, this.polygonNum, toPoint, this.option));
+					}
+				}
+
+			}
 		}
 	}
 
@@ -108,7 +182,7 @@ class AddPolygon implements Tool {
 	}
 
 	public onEnable(ctx: AppContextProps) {
-		this.activePoints = [];
+		this.activePoints.splice(0, this.activePoints.length);
 		this.polygonNum = -1;
 	}
 

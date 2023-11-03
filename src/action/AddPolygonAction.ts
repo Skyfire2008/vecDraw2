@@ -5,23 +5,28 @@ class AddPolygonAction implements Action {
 	private points: Array<number>;
 	private newPoint: Point;
 	private color: string;
+	private option: AddPolygonOption;
 
-	constructor(layer: number, color: string, points: Array<number>, newPoint?: Point) {
+	constructor(layer: number, color: string, points: Array<number>, option: AddPolygonOption, newPoint?: Point) {
 		this.description = ["Added polygon on layer ${layer} from points", ...points.map((p) => { return { pointNum: p } })];
 		this.layerNum = layer;
 
 		this.color = color;
 		this.points = points.slice(0);
 		this.newPoint = newPoint;
+		this.option = option;
 	}
 
 	public do(ctx: AppContextProps): void {
 		const layer = ctx.layers[this.layerNum];
 
 		if (this.newPoint != undefined) {
-			this.points.push(layer.points.length);
+			this.option.do(this.points, layer.points.length);
 			layer.points.push(this.newPoint);
+		} else {
+			this.option.do(this.points, null);
 		}
+
 		layer.polygons.push({ points: this.points, color: this.color });
 
 		const newLayers = ctx.layers.slice(0);
@@ -49,12 +54,14 @@ class ExpandPolygon implements Action {
 
 	private polygon: number;
 	private point: number | Point;
+	private option: AddPolygonOption;
 
-	constructor(layer: number, polygon: number, point: number | Point) {
+	constructor(layer: number, polygon: number, point: number | Point, option: AddPolygonOption) {
 		this.description = [`Added new point to polygon ${polygon}`]
 		this.layerNum = layer;
 		this.polygon = polygon;
 		this.point = point;
+		this.option = option;
 	}
 
 	public do(ctx: AppContextProps): void {
@@ -68,7 +75,7 @@ class ExpandPolygon implements Action {
 			toNum = this.point;
 		}
 
-		layer.polygons[this.polygon].points.push(toNum);
+		this.option.do(layer.polygons[this.polygon].points, toNum);
 
 		const newLayers = ctx.layers.slice(0);
 		newLayers[this.layerNum] = Object.assign({}, layer);

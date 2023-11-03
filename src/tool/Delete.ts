@@ -18,6 +18,7 @@ class Delete implements Tool {
 		if (this.pointHover) {
 			pos = convertCoords(layer.points[this.deletedItem.num], ctx.pan, ctx.zoom, 0);
 		} else {
+			this.deletedItem = null;
 			const pointNum = layer.points.findIndex((p) => Point.equals(p, e.gridPos));
 			if (pointNum > -1) {
 				pos = convertCoords(e.gridPos, ctx.pan, ctx.zoom, 0);
@@ -28,7 +29,7 @@ class Delete implements Tool {
 				for (let i = 0; i < layer.lines.length; i++) {
 					const line = layer.lines[i];
 
-					const maxDist = line.thickness != 0 ? line.thickness : 2;
+					const maxDist = line.thickness != 0 ? line.thickness / 2 : 2 / ctx.zoom;
 
 					//find the projection of vector p0->v onto p0->p1
 					const p0 = layer.points[line.from];

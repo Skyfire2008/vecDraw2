@@ -171,8 +171,9 @@ class AddLine implements Tool {
 				ctx.addAction(new UpdateLineAction(ctx.activeLayer, lineIndex, ctx.lineThickness, ctx.lineColor));
 			} else {
 				ctx.addAction(new AddLineAction(ctx.activeLayer, this.selector.getActivePoint(), pointIsNew ? e.gridPos : toPoint, ctx.lineThickness, ctx.lineColor));
-				this.selector.onAddPoint(toPoint);
 			}
+
+			this.selector.onAddPoint(toPoint);
 		} else {
 			//no active point - set active point
 			if (pointIsNew) {

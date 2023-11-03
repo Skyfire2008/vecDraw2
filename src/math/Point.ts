@@ -30,7 +30,7 @@ class Point implements PointLike {
 	public static distance(a: PointLike, b: PointLike) {
 		const x = a.x - b.x;
 		const y = a.y - b.y;
-		return x * x + y * y;
+		return Math.sqrt(x * x + y * y);
 	}
 
 	/**
