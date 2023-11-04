@@ -5,13 +5,16 @@ interface AddPolygonOption extends ToolOption {
 	 * @param point new point to be added
 	 */
 	do(points: Array<number>, point: number): void;
-	undo(): void;
+
+	undo(points: Array<number>, point: number): void;
 }
 
 class TriangleFan implements AddPolygonOption {
 	public readonly name = "Triangle Fan";
 	public readonly description = "New points are connected to previous and starting point";
 	private readonly activePoints: Array<number>;
+
+	private readonly pointHistory: Array<number> = [];
 
 	constructor(activePoints: Array<number>) {
 		this.activePoints = activePoints;
@@ -24,12 +27,19 @@ class TriangleFan implements AddPolygonOption {
 			if (point != null) {
 				points.push(point);
 			}
+			this.pointHistory.push(this.activePoints[1]);
 			this.activePoints[1] = point;
 		}
 	}
 
-	public undo() {
-		
+	public undo(points: Array<number>, point: number) {
+		if (points.length > 3) {//if more than 3 points, polygon is being expanded
+			points.pop();
+		} else {//otherwise, polygon is added
+
+		}
+
+		this.activePoints[1] = this.pointHistory.pop();
 	}
 }
 
@@ -37,6 +47,8 @@ class TriangleStrip implements AddPolygonOption {
 	public readonly name = "Triangle Strip";
 	public readonly description = "New points are connected to 2 previous points";
 	private readonly activePoints: Array<number>;
+
+	private readonly pointHistory: Array<number> = [];
 
 	constructor(activePoints: Array<number>) {
 		this.activePoints = activePoints;
@@ -59,7 +71,9 @@ class TriangleStrip implements AddPolygonOption {
 		}
 	}
 
-	public undo() { }
+	public undo(points: Array<number>, point: number) {
+
+	}
 }
 
 
@@ -67,12 +81,12 @@ class AddPolygon implements Tool {
 
 	readonly name = "AddPolygon";
 	readonly description = "Add a polygon";
-	private readonly activePoints: Array<number> = [];
+	private activePoints: Array<number> = [];
 	private polygonNum: number = -1;
 
 	private hoverPoint = -1;
 
-	readonly options = [new TriangleFan(this.activePoints), new TriangleStrip(this.activePoints)];
+	public options = [new TriangleFan(this.activePoints), new TriangleStrip(this.activePoints)];
 	private optionInd = 0;
 	private option = this.options[this.optionInd];
 
@@ -91,6 +105,10 @@ class AddPolygon implements Tool {
 	public setOptionInd(num: number) {
 		this.optionInd = num;
 		this.option = this.options[this.optionInd];
+	}
+
+	public getActivePoints(): Array<number> {
+		return this.activePoints;
 	}
 
 	public onMouseDown(e: MyMouseEvent, ctx: AppContextProps) {
@@ -182,7 +200,9 @@ class AddPolygon implements Tool {
 	}
 
 	public onEnable(ctx: AppContextProps) {
-		this.activePoints.splice(0, this.activePoints.length);
+		this.activePoints = [];
+		this.options = [new TriangleFan(this.activePoints), new TriangleStrip(this.activePoints)];
+		this.option = this.options[this.optionInd];
 		this.polygonNum = -1;
 	}
 

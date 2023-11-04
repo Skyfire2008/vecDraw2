@@ -39,6 +39,9 @@ class AddPolygonAction implements Action {
 
 		if (this.newPoint != undefined) {
 			layer.points.pop();
+			this.option.undo(this.points, layer.points.length);
+		} else {
+			this.option.undo(this.points, null);
 		}
 		layer.polygons.pop();
 
@@ -52,14 +55,14 @@ class ExpandPolygon implements Action {
 	readonly description: ActionKeyWord[];
 	readonly layerNum: number;
 
-	private polygon: number;
+	private polygonNum: number;
 	private point: number | Point;
 	private option: AddPolygonOption;
 
-	constructor(layer: number, polygon: number, point: number | Point, option: AddPolygonOption) {
-		this.description = [`Added new point to polygon ${polygon}`]
+	constructor(layer: number, polygonNum: number, point: number | Point, option: AddPolygonOption) {
+		this.description = [`Added new point to polygon ${polygonNum}`]
 		this.layerNum = layer;
-		this.polygon = polygon;
+		this.polygonNum = polygonNum;
 		this.point = point;
 		this.option = option;
 	}
@@ -75,7 +78,7 @@ class ExpandPolygon implements Action {
 			toNum = this.point;
 		}
 
-		this.option.do(layer.polygons[this.polygon].points, toNum);
+		this.option.do(layer.polygons[this.polygonNum].points, toNum);
 
 		const newLayers = ctx.layers.slice(0);
 		newLayers[this.layerNum] = Object.assign({}, layer);
@@ -83,6 +86,20 @@ class ExpandPolygon implements Action {
 	}
 
 	public undo(ctx: AppContextProps): void {
+		const layer = ctx.layers[this.layerNum];
+		const polygon = layer.polygons[this.polygonNum];
 
+		let toNum: number;
+		if (AddLineAction.isPoint(this.point)) {
+			layer.points.pop();
+			toNum = layer.points.length;
+		} else {
+			toNum = this.point;
+		}
+		this.option.undo(polygon.points, toNum);
+
+		const newLayers = ctx.layers.slice(0);
+		newLayers[this.layerNum] = Object.assign({}, layer);
+		ctx.setLayers(newLayers);
 	}
 }

@@ -33,7 +33,7 @@ const loadShape = (shapeString: string): Array<LayerData> => {
 		return [{ points, lines, polygons: [] }];
 	} else {
 		return json.layers.map((layer) => {
-			return { lines: layer.lines, polygons: layer.polygons ? layer.polygons : [], points: layer.points.map((p) => new Point(p.x, p.y)) }
+			return { lines: layer.lines, polygons: layer.polygons ? layer.polygons : [], points: layer.points.map((p) => new Point(p.x, p.y)) };
 		})
 	}
 }

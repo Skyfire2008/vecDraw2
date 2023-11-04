@@ -30,6 +30,11 @@ class AddPointAction implements Action {
 			if (ctx.tool.selector.getActivePoint() == this.num) {
 				ctx.tool.selector.setActivePoint(-1);
 			}
+		} else if (AddPolygon.isAddPolygon(ctx.tool)) {
+			const activePoints = ctx.tool.getActivePoints();
+			if (activePoints[activePoints.length - 1] == this.num) {
+				activePoints.pop();
+			}
 		}
 
 		//INFO: this doesn't update react state and relies on components needing layer data to update
