@@ -56,6 +56,12 @@ class AddLineAction implements Action {
 				if (ctx.tool.selector.getActivePoint() == toNum) {
 					ctx.tool.selector.setActivePoint(-1);
 				}
+			} else if (AddPolygon.isAddPolygon(ctx.tool)) {
+				const toolState = ctx.tool.getState();
+				const ind = toolState.activePoints.findIndex((item) => item == toNum);
+				if (ind > 0) {
+					toolState.activePoints.splice(ind, 1);
+				}
 			}
 		}
 

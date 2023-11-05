@@ -31,9 +31,10 @@ class AddPointAction implements Action {
 				ctx.tool.selector.setActivePoint(-1);
 			}
 		} else if (AddPolygon.isAddPolygon(ctx.tool)) {
-			const activePoints = ctx.tool.getActivePoints();
-			if (activePoints[activePoints.length - 1] == this.num) {
-				activePoints.pop();
+			const toolState = ctx.tool.getState();
+			const ind = toolState.activePoints.findIndex((item) => item == this.num);
+			if (ind > 0) {
+				toolState.activePoints.splice(ind, 1);
 			}
 		}
 

@@ -5,26 +5,22 @@ class AddPolygonAction implements Action {
 	private points: Array<number>;
 	private newPoint: Point;
 	private color: string;
-	private option: AddPolygonOption;
 
-	constructor(layer: number, color: string, points: Array<number>, option: AddPolygonOption, newPoint?: Point) {
+	constructor(layer: number, color: string, points: Array<number>, newPoint?: Point) {
 		this.description = ["Added polygon on layer ${layer} from points", ...points.map((p) => { return { pointNum: p } })];
 		this.layerNum = layer;
 
 		this.color = color;
 		this.points = points.slice(0);
 		this.newPoint = newPoint;
-		this.option = option;
 	}
 
 	public do(ctx: AppContextProps): void {
 		const layer = ctx.layers[this.layerNum];
 
 		if (this.newPoint != undefined) {
-			this.option.do(this.points, layer.points.length);
 			layer.points.push(this.newPoint);
-		} else {
-			this.option.do(this.points, null);
+			this.points.push(layer.points.length - 1);
 		}
 
 		layer.polygons.push({ points: this.points, color: this.color });
@@ -37,13 +33,31 @@ class AddPolygonAction implements Action {
 	public undo(ctx: AppContextProps): void {
 		const layer = ctx.layers[this.layerNum];
 
+		let pointNum = -1;
 		if (this.newPoint != undefined) {
 			layer.points.pop();
-			this.option.undo(this.points, layer.points.length);
-		} else {
-			this.option.undo(this.points, null);
+			pointNum = layer.points.length - 1;
 		}
 		layer.polygons.pop();
+
+		if (AddPolygon.isAddPolygon(ctx.tool)) {
+			const toolState = ctx.tool.getState();
+			if (toolState.polygonNum == layer.polygons.length) {
+
+				//if current polygon is being edited, revert activepoints and polygonNum
+				toolState.activePoints[1] = this.points[1];
+				toolState.polygonNum = -1;
+			} else {
+
+				//otherwise just ensure that activePoints doesn't have deleted points
+				const ind = toolState.activePoints.findIndex((item) => item == pointNum);
+				if (ind > -1) {
+					toolState.activePoints.splice(ind, 1);
+				}
+			}
+
+			ctx.tool.setState(toolState);
+		}
 
 		const newLayers = ctx.layers.slice(0);
 		newLayers[this.layerNum] = Object.assign({}, layer);
@@ -57,28 +71,26 @@ class ExpandPolygon implements Action {
 
 	private polygonNum: number;
 	private point: number | Point;
-	private option: AddPolygonOption;
 
-	constructor(layer: number, polygonNum: number, point: number | Point, option: AddPolygonOption) {
+	constructor(layer: number, polygonNum: number, point: number | Point) {
 		this.description = [`Added new point to polygon ${polygonNum}`]
 		this.layerNum = layer;
 		this.polygonNum = polygonNum;
 		this.point = point;
-		this.option = option;
 	}
 
 	public do(ctx: AppContextProps): void {
 		const layer = ctx.layers[this.layerNum];
+		const polygon = layer.polygons[this.polygonNum];
 
-		let toNum: number;
-		if (AddLineAction.isPoint(this.point)) {
-			toNum = layer.points.length;
+		let pointNum: number;
+		if (AddLineAction.isPoint(this.point)) {//if point is new, first add it to point array
+			pointNum = layer.points.length;
 			layer.points.push(this.point);
 		} else {
-			toNum = this.point;
+			pointNum = this.point;
 		}
-
-		this.option.do(layer.polygons[this.polygonNum].points, toNum);
+		polygon.points.push(pointNum);
 
 		const newLayers = ctx.layers.slice(0);
 		newLayers[this.layerNum] = Object.assign({}, layer);
@@ -89,14 +101,28 @@ class ExpandPolygon implements Action {
 		const layer = ctx.layers[this.layerNum];
 		const polygon = layer.polygons[this.polygonNum];
 
-		let toNum: number;
+		let pointNum = -1;
 		if (AddLineAction.isPoint(this.point)) {
 			layer.points.pop();
-			toNum = layer.points.length;
-		} else {
-			toNum = this.point;
+			pointNum = layer.points.length;
 		}
-		this.option.undo(polygon.points, toNum);
+		polygon.points.pop();
+
+		if (AddPolygon.isAddPolygon(ctx.tool)) {
+			const toolState = ctx.tool.getState();
+			if (toolState.polygonNum == this.polygonNum) {
+
+				//if current polygon is being undone, revert activePoints to previous state
+				toolState.activePoints[1] = polygon.points[polygon.points.length - 1];
+			} else {
+
+				//otherwise just ensure that activePoints doesn't have deleted points
+				const ind = toolState.activePoints.findIndex((item) => item == pointNum);
+				if (ind > -1) {
+					toolState.activePoints.splice(ind, 1);
+				}
+			}
+		}
 
 		const newLayers = ctx.layers.slice(0);
 		newLayers[this.layerNum] = Object.assign({}, layer);
