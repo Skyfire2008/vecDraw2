@@ -5,7 +5,8 @@ class DeleteSelection implements Action {
 	private selection: Set<number>;
 
 	private deletedPoints: Array<{ num: number, p: Point }> = [];
-	private deletedLines: Array<{ num: number, l: Line }> = [];
+	private deletedLines: Array<{ num: number, line: Line }> = [];
+	private deletedPolygons: Array<{ num: number, polygon: Polygon, deleted: boolean }> = [];
 
 	constructor(layerNum: number, selection: Set<number>) {
 		this.layerNum = layerNum;
@@ -36,14 +37,40 @@ class DeleteSelection implements Action {
 			const line = layer.lines[i];
 
 			if (this.selection.has(line.from) || this.selection.has(line.to)) {
-				this.deletedLines.push({ num: i, l: line });
+				this.deletedLines.push({ num: i, line: line });
 			} else {
 				const newLine = Object.assign({}, line, { from: newPointNums[line.from], to: newPointNums[line.to] });
 				newLines.push(newLine);
 			}
 		}
 
-		ctx.layers[this.layerNum] = { points: newPoints, polygons: layer.polygons, lines: newLines };
+		const newPolygons: Array<Polygon> = [];
+		for (let i = 0; i < layer.polygons.length; i++) {
+			const polygon = layer.polygons[i];
+			const newPolygon: Polygon = { color: polygon.color, points: [] };
+
+			let changed = false;
+			for (const point of polygon.points) {
+				if (this.selection.has(point)) {
+					changed = true;
+				} else {
+					newPolygon.points.push(newPointNums[point]);
+				}
+			}
+
+			if (changed) {
+				//delete polygon completely if number of points<3
+				if (newPolygon.points.length < 3) {
+					this.deletedPolygons.push({ num: i, polygon, deleted: true });
+				} else {
+					this.deletedPolygons.push({ num: i, polygon, deleted: false });
+					newPolygons.push(newPolygon);
+				}
+
+			}
+		}
+
+		ctx.layers[this.layerNum] = { points: newPoints, polygons: newPolygons, lines: newLines };
 		ctx.setLayers(ctx.layers.slice(0));
 		ctx.setSelection(new Set<number>());
 	}
@@ -75,7 +102,7 @@ class DeleteSelection implements Action {
 			const delLine = this.deletedLines[delInd];
 
 			if (delLine?.num == i) {
-				newLines.push(delLine.l);
+				newLines.push(delLine.line);
 				delInd++;
 			} else {
 				const line = layer.lines[oldInd];
@@ -85,7 +112,18 @@ class DeleteSelection implements Action {
 			}
 		}
 
-		ctx.layers[this.layerNum] = { points: newPoints, polygons: layer.polygons, lines: newLines };
+		const newPolygons: Array<Polygon> = layer.polygons.slice(0);
+		let offset = 0;
+		for (const polygon of this.deletedPolygons) {
+			if (!polygon.deleted) {
+				newPolygons[polygon.num - offset] = polygon.polygon;
+			} else {
+				newPolygons.splice(polygon.num - offset, 0, polygon.polygon);
+				offset++;
+			}
+		}
+
+		ctx.layers[this.layerNum] = { points: newPoints, polygons: newPolygons, lines: newLines };
 		ctx.setLayers(ctx.layers.slice(0));
 		ctx.setSelection(this.selection);
 	}

@@ -1,11 +1,13 @@
 class Delete implements Tool {
 	private static point = "POINT";
 	private static line = "LINE";
+	private static polygon = "POLYGON";
 
 	readonly name = "Delete";
 	readonly description = "Delete points and lines";
 	private deletedItem: { type: string, num: number };
 	private pointHover = false;
+	private polygonHover = false;
 
 	constructor() { }
 
@@ -17,6 +19,8 @@ class Delete implements Tool {
 		let pos: Point = null;
 		if (this.pointHover) {
 			pos = convertCoords(layer.points[this.deletedItem.num], ctx.pan, ctx.zoom, 0);
+		} else if (this.polygonHover) {
+			pos = e.pos;
 		} else {
 			this.deletedItem = null;
 			const pointNum = layer.points.findIndex((p) => Point.equals(p, e.gridPos));
@@ -83,6 +87,10 @@ class Delete implements Tool {
 				case Delete.line:
 					ctx.addAction(new DeleteLine(ctx.activeLayer, this.deletedItem.num));
 					break;
+				case Delete.polygon:
+					ctx.addAction(new DeletePolygon(ctx.activeLayer, this.deletedItem.num));
+					this.polygonHover = false;
+					break;
 			}
 
 			this.deletedItem = null;
@@ -98,6 +106,16 @@ class Delete implements Tool {
 	public onPointLeave(num: number, ctx: AppContextProps) {
 		this.deletedItem = null;
 		this.pointHover = false;
+	}
+
+	public onPolygonEnter(num: number, ctx: AppContextProps) {
+		this.deletedItem = { type: Delete.polygon, num };
+		this.polygonHover = true;
+	}
+
+	public onPolygonLeave(num: number, ctx: AppContextProps) {
+		this.deletedItem = null;
+		this.polygonHover = false;
 	}
 
 	public onEnable(ctx: AppContextProps) { }

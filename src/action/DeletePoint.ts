@@ -3,8 +3,8 @@ class DeletePoint implements Action {
 	readonly layerNum: number;
 	private pointNum: number;
 	private point: Point;
-	private deletedLines: Array<{ line: Line, i: number }> = []; //also store their position in array to preserve order when undoing
-	private deletedPolygons: Array<{ i: number, polygon: Polygon, deleted: boolean }> = [];
+	private deletedLines: Array<{ line: Line, num: number }> = []; //also store their position in array to preserve order when undoing
+	private deletedPolygons: Array<{ num: number, polygon: Polygon, deleted: boolean }> = [];
 
 	constructor(layerNum: number, pointNum: number, point: Point) {
 		this.layerNum = layerNum;
@@ -23,7 +23,7 @@ class DeletePoint implements Action {
 			const line = layer.lines[i];
 
 			if (line.from == this.pointNum || line.to == this.pointNum) {
-				this.deletedLines.push({ line, i });
+				this.deletedLines.push({ line, num: i });
 			} else {
 				//decrement line end point by 1 since removal of point shifted everything by -1
 				if (line.from > this.pointNum) {
@@ -54,13 +54,14 @@ class DeletePoint implements Action {
 			}
 
 			if (changed) {
-				//TODO: maybe make that 3 points?
-				//if polygon has less than 2 points remaining, it's deleted completely
-				this.deletedPolygons.push({ i, polygon, deleted: newPolygon.points.length < 2 });
-			}
+				//delete polygon completely if number of points<3
+				if (newPolygon.points.length < 3) {
+					this.deletedPolygons.push({ num: i, polygon, deleted: true });
+				} else {
+					this.deletedPolygons.push({ num: i, polygon, deleted: false });
+					newPolygons.push(newPolygon);
+				}
 
-			if (newPolygon.points.length >= 2) {
-				newPolygons.push(newPolygon);
 			}
 		}
 
@@ -80,7 +81,7 @@ class DeletePoint implements Action {
 			const line = layer.lines[i];
 			const deletedLine = this.deletedLines[j];
 
-			if (deletedLine?.i == k) {
+			if (deletedLine?.num == k) {
 				//if reached position where current deleted line was, restore it
 				newLines.push(deletedLine.line);
 				j++;
@@ -102,9 +103,9 @@ class DeletePoint implements Action {
 		let offset = 0;
 		for (const polygon of this.deletedPolygons) {
 			if (!polygon.deleted) {
-				newPolygons[polygon.i - offset] = polygon.polygon;
+				newPolygons[polygon.num - offset] = polygon.polygon;
 			} else {
-				newPolygons.splice(polygon.i - offset, 0, polygon.polygon);
+				newPolygons.splice(polygon.num - offset, 0, polygon.polygon);
 				offset++;
 			}
 		}
