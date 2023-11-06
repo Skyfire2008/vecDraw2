@@ -36,6 +36,11 @@ class AddPointAction implements Action {
 			if (ind > 0) {
 				toolState.activePoints.splice(ind, 1);
 			}
+			if (toolState.hoverPoint == this.num) {
+				toolState.hoverPoint = -1;
+			}
+
+			ctx.tool.setState(toolState);
 		}
 
 		//INFO: this doesn't update react state and relies on components needing layer data to update

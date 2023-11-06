@@ -56,6 +56,10 @@ class AddPolygonAction implements Action {
 				}
 			}
 
+			if (toolState.hoverPoint == pointNum) {
+				toolState.hoverPoint = -1;
+			}
+
 			ctx.tool.setState(toolState);
 		}
 
@@ -122,6 +126,12 @@ class ExpandPolygon implements Action {
 					toolState.activePoints.splice(ind, 1);
 				}
 			}
+
+			if (toolState.hoverPoint == pointNum) {
+				toolState.hoverPoint = -1;
+			}
+
+			ctx.tool.setState(toolState);
 		}
 
 		const newLayers = ctx.layers.slice(0);

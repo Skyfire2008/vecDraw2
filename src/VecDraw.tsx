@@ -281,7 +281,7 @@ const VecDraw: React.FC<any> = () => {
 					<div className="column">
 						<svg ref={svgRef} width={width} height={height} style={{ width, height }} onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onWheel={onWheel}>
 							<BgRect width={width} height={height} gridSettings={gridSettings} zoom={zoom} pan={pan}></BgRect>
-							{layers.map((layer, i) => <Layer key={i} layer={layer} highlight={highlight?.layerNum == i ? highlight : null} pan={pan} zoom={zoom}></Layer>)}
+							{layers.map((layer, i) => <Layer key={i} num={i} layer={layer} highlight={highlight?.layerNum == i ? highlight : null} pan={pan} zoom={zoom}></Layer>)}
 							<g ref={tempGroupRef}></g>
 							{selection.size > 0 &&
 								<SelectionRect

@@ -62,6 +62,11 @@ class AddLineAction implements Action {
 				if (ind > 0) {
 					toolState.activePoints.splice(ind, 1);
 				}
+				if (toolState.hoverPoint == toNum) {
+					toolState.hoverPoint = -1;
+				}
+
+				ctx.tool.setState(toolState);
 			}
 		}
 

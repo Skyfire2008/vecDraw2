@@ -17,6 +17,7 @@ interface LayerData {
 }
 
 interface LayerProps {
+	num: number;
 	layer: LayerData;
 	highlight: Highlight;
 	pan: PointLike;
@@ -41,23 +42,11 @@ const convertCoords = (p: PointLike, pan: PointLike, zoom: number, thickness: nu
 	return result;
 };
 
-const Layer: React.FC<LayerProps> = React.memo(({ layer, highlight, pan, zoom }) => {
+const Layer: React.FC<LayerProps> = React.memo(({ layer, highlight, pan, zoom, num }) => {
 
 	return (
 		<>
-			<g>{layer.polygons.map((polygon, i) => {
-				let points = "";
-				for (const p of polygon.points) {
-					const converted = convertCoords(layer.points[p], pan, zoom, 0);
-					points += converted.x + "," + converted.y + " ";
-				}
-				return (<polygon
-					key={i}
-					points={points}
-					style={{ fill: polygon.color }}>
-				</polygon>);
-
-			})}</g>
+			<g>{layer.polygons.map((polygon, i) => <MyPolygon key={i} num={i} polygon={polygon} layer={num}></MyPolygon>)}</g>
 			<g>{layer.lines.map((line, i) => {
 				const thickness = line.thickness != 0 ? line.thickness * zoom : 2;
 				const from = convertCoords(layer.points[line.from], pan, zoom, thickness);

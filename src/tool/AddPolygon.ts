@@ -1,6 +1,7 @@
 interface AddPolygonState {
 	polygonNum: number;
 	activePoints: Array<number>;
+	hoverPoint: number;
 }
 
 class AddPolygon implements Tool {
@@ -19,33 +20,50 @@ class AddPolygon implements Tool {
 	constructor() { }
 
 	public getState(): AddPolygonState {
-		return { polygonNum: this.polygonNum, activePoints: this.activePoints };
+		return { polygonNum: this.polygonNum, activePoints: this.activePoints, hoverPoint: this.hoverPoint };
 	}
 
 	public setState(state: AddPolygonState) {
 		this.polygonNum = state.polygonNum;
 		this.activePoints = state.activePoints;
+		this.hoverPoint = state.hoverPoint;
 	}
 
 	public onMouseDown(e: MyMouseEvent, ctx: AppContextProps) {
 	}
 
 	public onMouseMove(e: MyMouseEvent, ctx: AppContextProps) {
+		const layer = ctx.layers[ctx.activeLayer];
 
-		const gridPos = this.hoverPoint < 0 ? e.gridPos : ctx.layers[ctx.activeLayer].points[this.hoverPoint];
+		const hoverPointValid = 0 < this.hoverPoint && this.hoverPoint < ctx.layers[ctx.activeLayer].points.length;
+		const gridPos = hoverPointValid ? ctx.layers[ctx.activeLayer].points[this.hoverPoint] : e.gridPos;
 
 		const pos = convertCoords(gridPos, ctx.pan, ctx.zoom, 0);
 		let newInnerHtml = `<use href="#point" class="no-mouse-events" x=${pos.x} y=${pos.y}></use>`;
 
-		if (this.activePoints[0] != undefined) {
-			const activePoint = ctx.layers[ctx.activeLayer].points[this.activePoints[0]];
-			newInnerHtml = AddLine.drawLineToHtml(gridPos, activePoint, ctx, 1, ctx.lineColor) + newInnerHtml;
+		let points: Array<Point> = [];
+		if (this.activePoints[0] != null) {
+			points.push(layer.points[this.activePoints[0]]);
 		}
 
-		if (this.activePoints[1] != undefined) {
-			const activePoint = ctx.layers[ctx.activeLayer].points[this.activePoints[1]];
-			newInnerHtml = AddLine.drawLineToHtml(gridPos, activePoint, ctx, 1, ctx.lineColor) + newInnerHtml;
+		points.push(gridPos);
+
+		if (this.activePoints[1] != null) {
+			points.push(layer.points[this.activePoints[1]]);
 		}
+
+		if (this.polygonNum == -1 && this.activePoints[1] != null) {
+			points.push(layer.points[this.activePoints[0]]);
+		}
+
+		let coordString = "";
+		for (const p of points) {
+			const foo = convertCoords(p, ctx.pan, ctx.zoom, 1);
+			coordString += `${foo.x},${foo.y} `;
+		}
+
+		newInnerHtml = `<polyline points="${coordString}" fill="none" stroke="white" stroke-width="1" stroke-linecap="round" stroke-dasharray="10 6"></polyline>` + newInnerHtml;
+		newInnerHtml = `<polyline points="${coordString}" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-dasharray="10 6"></polyline>` + newInnerHtml;
 
 		window.requestAnimationFrame(() => {
 			ctx.tempGroup.current.innerHTML = newInnerHtml;

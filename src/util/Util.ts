@@ -43,7 +43,7 @@ const drawOntoCanvas = (canvas: HTMLCanvasElement, layers: Array<LayerData>, bgC
 	//scale the fucking layers first!!!
 	const scaledLayers: Array<LayerData> = [];
 	for (const layer of layers) {
-		const newLayer: LayerData = { points: [], lines: [], polygons: [] };
+		const newLayer: LayerData = { points: [], lines: [], polygons: layer.polygons };
 		for (const line of layer.lines) {
 			newLayer.lines.push(Object.assign({}, line, { thickness: line.thickness * scale }));
 		}
@@ -76,6 +76,16 @@ const drawOntoCanvas = (canvas: HTMLCanvasElement, layers: Array<LayerData>, bgC
 			top = Math.min(top, minY);
 			bottom = Math.max(bottom, maxY);
 		}
+
+		for (const polygon of layer.polygons) {
+			for (const pointNum of polygon.points) {
+				const point = layer.points[pointNum];
+				left = Math.min(left, point.x);
+				right = Math.max(right, point.x);
+				top = Math.min(top, point.y);
+				bottom = Math.max(bottom, point.y);
+			}
+		}
 	}
 
 	canvas.width = right - left;
@@ -99,6 +109,20 @@ const drawOntoCanvas = (canvas: HTMLCanvasElement, layers: Array<LayerData>, bgC
 	};
 
 	for (const layer of scaledLayers) {
+
+		for (const polygon of layer.polygons) {
+			ctx.beginPath();
+			ctx.fillStyle = polygon.color;
+			const startPoint = convertPoint(layer.points[polygon.points[0]], 0);
+			ctx.moveTo(startPoint.x, startPoint.y)
+			for (let i = 1; i < polygon.points.length; i++) {
+				const pointNum = polygon.points[i];
+				const point = convertPoint(layer.points[pointNum], 0);
+				ctx.lineTo(point.x, point.y);
+			}
+			ctx.fill();
+		}
+
 		for (const line of layer.lines) {
 			const thickness = line.thickness > 0 ? line.thickness : 1;
 			const from = convertPoint(layer.points[line.from], thickness);

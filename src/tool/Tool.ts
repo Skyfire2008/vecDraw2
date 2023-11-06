@@ -29,6 +29,9 @@ interface Tool {
 	onPointClick?(num: number, ctx: AppContextProps, ctrlHeld: boolean, shiftHeld: boolean);
 	onPointEnter?(num: number, ctx: AppContextProps);
 	onPointLeave?(num: number, ctx: AppContextProps);
+	onPolygonEnter?(num: number, ctx: AppContextProps);
+	onPolygonLeave?(num: number, ctx: AppContextProps);
+	onPolygonClick?(num: number, ctX: AppContextProps);
 	onEnable?(ctx: AppContextProps);
 	onDisable?(ctx: AppContextProps);
 	redraw?();
