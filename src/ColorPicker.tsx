@@ -4,14 +4,43 @@ interface ColorPickerProps {
 	onClose: (value: string) => void;
 }
 
+enum ColorType {
+	PreDefined = 0,
+	Custom = 1
+}
+
 const ColorPicker: React.FC<ColorPickerProps> = ({ value, setValue, onClose }) => {
 	const focused = React.useRef(false);
 	const inputRef = React.useRef<HTMLInputElement>(null);
-	const [selectedColor, setSelectedColor] = React.useState<number>(0);
-	const [colors, setColors] = React.useState<Array<string>>([
-		"#000000", "#c0c0c0", "#ff0000", "#ffff00", "#00ff00", "#00ffff", "#0000ff", "#ff00ff", "#ffffff", "#ffffff", "#ffffff", "#ffffff",
-		"#808080", "#ffffff", "#ff8080", "#ffff80", "#80ff80", "#80ffff", "#8080ff", "#ff80ff", "#ffffff", "#ffffff", "#ffffff", "#ffffff"
+	const [selectedColor, setSelectedColor] = React.useState<{ num: number, type: ColorType }>({ num: 0, type: ColorType.PreDefined });
+
+	const preDefinedColors = [
+		"#000000", "#808080", "#c0c0c0", "#ffffff", "#ff0000", "#ff8080", "#ffff00", "#ffff80",
+		"#00ff00", "#80ff80", "#00ffff", "#80ffff", "#0000ff", "#8080ff", "#ff00ff", "#ff80ff"
+	];
+	const [customColors, setCustomColors] = React.useState<Array<string>>([
+		"#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff",
+		"#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff"
 	]);
+
+	//array of last used custom color indices, with last used one the first
+	const lastUsedCustom = React.useRef<Array<number>>(null);
+	if (lastUsedCustom.current == null) {
+		lastUsedCustom.current = [];
+		for (let i = 0; i < customColors.length; i++) {
+			lastUsedCustom.current[i] = i;
+		}
+	}
+
+	/**
+	 * Refreshes a custom color, by pushing its index to the front
+	 * @param i 
+	 */
+	const refreshCustomColor = (i: number) => {
+		const pos = lastUsedCustom.current.findIndex((num) => num == i);
+		lastUsedCustom.current.splice(pos, 1);
+		lastUsedCustom.current.push(i);
+	};
 
 	const onKeyDown = React.useRef((e: KeyboardEvent) => {
 		if (focused.current && e.key == "Enter") {
@@ -29,29 +58,87 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ value, setValue, onClose }) =
 		return () => { document.removeEventListener("keyup", onKeyDown.current) };
 	});
 
+	const onPaletteClick = (num: number, type: ColorType) => {
+		setSelectedColor({ num, type });
+
+		let color: string;
+		switch (type) {
+			case ColorType.PreDefined:
+				color = preDefinedColors[num];
+				break;
+			case ColorType.Custom:
+				color = customColors[num];
+				refreshCustomColor(num);
+				break;
+		}
+
+		setValue(color);
+		onClose(color);
+	};
+
 	//build the palette
 	let i = 0;
 	const palette: Array<React.JSX.Element> = [];
-	const onPaletteClick = (i: number) => {
-		setSelectedColor(i);
-		setValue(colors[i]);
-		onClose(colors[i]);
-	};
-	for (let y = 0; y < 2; y++) {
-		const line: Array<React.JSX.Element> = [];
-		for (let x = 0; x < 12; x++) {
-			line.push(<div key={x} onClick={onPaletteClick.bind(null, i)} className={`palette ${i == selectedColor ? "selected" : ""}`} style={{ backgroundColor: colors[i] }}></div>)
+	for (let x = 0; x < 8; x++) {
+		const column: Array<React.JSX.Element> = [];
+		for (let y = 0; y < 2; y++) {
+			column.push(<div
+				key={y}
+				onClick={onPaletteClick.bind(null, i, ColorType.PreDefined)}
+				className={`palette ${selectedColor.type == ColorType.PreDefined && selectedColor.num == i ? "selected" : ""}`}
+				style={{ backgroundColor: preDefinedColors[i] }}></div>)
 			i++;
 		}
-		palette.push(<div className="line" key={y}>{line}</div>);
+		palette.push(<div className="column" key={x}>{column}</div>);
+	}
+
+	i = 0;
+	for (let x = 0; x < 8; x++) {
+		const column: Array<React.JSX.Element> = [];
+		for (let y = 0; y < 2; y++) {
+			column.push(<div
+				key={y}
+				onClick={onPaletteClick.bind(null, i, ColorType.Custom)}
+				className={`palette ${selectedColor.type == ColorType.Custom && selectedColor.num == i ? "selected" : ""}`}
+				style={{ backgroundColor: customColors[i] }}></div>)
+			i++;
+		}
+		palette.push(<div className="column" key={x + 8}>{column}</div>);
 	}
 
 	const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const newColor = e.target.value;
-		if (selectedColor >= 0 && selectedColor < 24) {
-			colors[selectedColor] = newColor;
-			setColors(colors.slice(0));
+
+		if (selectedColor.type == ColorType.Custom) {
+			customColors[selectedColor.num] = newColor;
+			refreshCustomColor(selectedColor.num);
+			setCustomColors(customColors.slice(0));
+		} else {
+
+			//find new color in map first
+			let colorPos = { num: preDefinedColors.findIndex((item) => item == newColor), type: null };
+			if (colorPos.num >= 0) {
+				colorPos.type = ColorType.PreDefined;
+			} else {
+				colorPos.num = customColors.findIndex((item) => item == newColor)
+				if (colorPos.num >= 0) {
+					colorPos.type = ColorType.Custom;
+					refreshCustomColor(colorPos.num);
+				}
+			}
+
+			//if color still not found, add it to custom colors
+			if (colorPos.num < 0) {
+				colorPos.num = lastUsedCustom.current[0];
+				colorPos.type = ColorType.Custom;
+				customColors[colorPos.num] = newColor;
+				setCustomColors(customColors.slice(0));
+				refreshCustomColor(colorPos.num);
+			}
+
+			setSelectedColor(colorPos);
 		}
+
 		setValue(newColor);
 	};
 
@@ -64,6 +151,6 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ value, setValue, onClose }) =
 			onFocus={(e) => focused.current = false}
 			onBlur={onBlur}
 			onKeyUp={() => { console.log("doesnt work"); }}></input>
-		<div className="column">{palette}</div>
+		<div className="line">{palette}</div>
 	</div>);
 };
