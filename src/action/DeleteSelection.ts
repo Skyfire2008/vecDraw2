@@ -6,7 +6,8 @@ class DeleteSelection implements Action {
 
 	private deletedPoints: Array<{ num: number, p: Point }> = [];
 	private deletedLines: Array<{ num: number, line: Line }> = [];
-	private deletedPolygons: Array<{ num: number, polygon: Polygon, deleted: boolean }> = [];
+	private deletedPolygons: Array<{ num: number, polygon: Polygon }> = [];
+	private totalPolygons: number;
 
 	constructor(layerNum: number, selection: Set<number>) {
 		this.layerNum = layerNum;
@@ -16,6 +17,7 @@ class DeleteSelection implements Action {
 
 	public do(ctx: AppContextProps): void {
 		const layer = ctx.layers[this.layerNum];
+		this.totalPolygons = layer.polygons.length;
 
 		const newPointNums: Array<number> = [];
 		const newPoints: Array<Point> = [];
@@ -54,19 +56,22 @@ class DeleteSelection implements Action {
 				if (this.selection.has(point)) {
 					changed = true;
 				} else {
+					if (newPointNums[point] != point) {
+						changed = true;
+					}
 					newPolygon.points.push(newPointNums[point]);
 				}
 			}
 
 			if (changed) {
 				//delete polygon completely if number of points<3
-				if (newPolygon.points.length < 3) {
-					this.deletedPolygons.push({ num: i, polygon, deleted: true });
-				} else {
-					this.deletedPolygons.push({ num: i, polygon, deleted: false });
+				if (newPolygon.points.length > 2) {
 					newPolygons.push(newPolygon);
 				}
 
+				this.deletedPolygons.push({ num: i, polygon });
+			} else {
+				newPolygons.push(newPolygon);
 			}
 		}
 
@@ -112,14 +117,18 @@ class DeleteSelection implements Action {
 			}
 		}
 
-		const newPolygons: Array<Polygon> = layer.polygons.slice(0);
-		let offset = 0;
-		for (const polygon of this.deletedPolygons) {
-			if (!polygon.deleted) {
-				newPolygons[polygon.num - offset] = polygon.polygon;
+		const newPolygons: Array<Polygon> = [];
+		delInd = 0;
+		oldInd = 0;
+		for (let i = 0; i < this.totalPolygons; i++) {
+			const delPolygon = this.deletedPolygons[delInd];
+
+			if (delPolygon?.num == i) {
+				newPolygons.push(delPolygon.polygon);
+				delInd++;
 			} else {
-				newPolygons.splice(polygon.num - offset, 0, polygon.polygon);
-				offset++;
+				newPolygons.push(layer.polygons[oldInd]);
+				oldInd++;
 			}
 		}
 
