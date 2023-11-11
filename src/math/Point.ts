@@ -33,6 +33,16 @@ class Point implements PointLike {
 		return Math.sqrt(x * x + y * y);
 	}
 
+	public static distance2(a: PointLike, b: PointLike) {
+		const x = a.x - b.x;
+		const y = a.y - b.y;
+		return x * x + y * y;
+	}
+
+	public static len(a: PointLike) {
+		return Math.sqrt(a.x * a.x + a.y * a.y);
+	}
+
 	/**
 	 * Project src onto tgt
 	 * @param src 

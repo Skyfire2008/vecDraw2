@@ -252,6 +252,48 @@ const VecDraw: React.FC<any> = () => {
 		});
 	};
 
+	const exportAsSdf = () => {
+		const canvas = document.createElement("canvas");
+
+		//calc canvas size
+		//TODO: move to a separate function
+		let minX = Number.POSITIVE_INFINITY;
+		let maxX = Number.NEGATIVE_INFINITY;
+		let minY = Number.POSITIVE_INFINITY;
+		let maxY = Number.NEGATIVE_INFINITY;
+		for (const layer of layers) {
+			for (const line of layer.lines) {
+				const halfThickness = line.thickness > 0 ? Math.ceil(line.thickness / 2) : 1;
+
+				const from = layer.points[line.from];
+				const to = layer.points[line.to];
+
+				minX = Math.min(minX, from.x - halfThickness, to.x - halfThickness);
+				maxX = Math.max(maxX, from.x + halfThickness, to.x + halfThickness);
+				minY = Math.min(minY, from.y - halfThickness, to.y - halfThickness);
+				maxY = Math.max(maxY, from.y + halfThickness, to.y + halfThickness);
+			}
+		}
+
+		canvas.width = maxX - minX;
+		canvas.height = maxY - minY;
+
+		const ctx = canvas.getContext("2d");
+		const imgData = ctx.createImageData(canvas.width, canvas.height, { colorSpace: "srgb" });
+
+		generateSdf(minX, minY, imgData.width, imgData.height, layers, imgData.data);
+
+		ctx.putImageData(imgData, 0, 0);
+
+		const a = document.createElement("a");
+		a.download = "sdf.png";
+		canvas.toBlob((blob) => {
+			a.href = URL.createObjectURL(blob);
+			a.addEventListener("click", (e) => setTimeout(() => URL.revokeObjectURL(a.href), 1000));
+			a.click();
+		});
+	};
+
 	return (
 		<div>
 			<AppContext.Provider value={ctx}>
@@ -262,6 +304,7 @@ const VecDraw: React.FC<any> = () => {
 					</div>
 					<button onClick={saveFile}>Save file</button>
 					<button onClick={exportAsPng}>Export as PNG</button>
+					<button onClick={exportAsSdf}>Export as SDF</button>
 					<div>
 						<label> Export scale:</label>
 						<input type="number" min="1" step="0.5" value={exportScale} onChange={(e) => setExportScale(e.target.valueAsNumber)}></input>
