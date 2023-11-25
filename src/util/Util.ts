@@ -19,6 +19,11 @@ interface OldShapeData {
 	lines: Array<OldLine>;
 }
 
+const colorToRgb = (color: string): Array<number> => {
+	const colorRgb = Number.parseInt(color, 16);
+	return [colorRgb >> 16, (colorRgb >> 8) & 0xff, colorRgb & 0xff];
+}
+
 const isOldFormat = (data: ShapeData | OldShapeData): data is OldShapeData => {
 	return (data as any).layers == undefined && (data as any).points != undefined && (data as any).lines != undefined;
 }

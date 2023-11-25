@@ -263,7 +263,7 @@ const VecDraw: React.FC<any> = () => {
 		let maxY = Number.NEGATIVE_INFINITY;
 		for (const layer of layers) {
 			for (const line of layer.lines) {
-				const halfThickness = line.thickness > 0 ? Math.ceil(line.thickness / 2) : 1;
+				const halfThickness = 128;
 
 				const from = layer.points[line.from];
 				const to = layer.points[line.to];
