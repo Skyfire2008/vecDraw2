@@ -13,8 +13,8 @@ interface SelectionProps {
 }
 
 const SelectionRect: React.FC<SelectionProps> = React.memo(({ svgWidth, svgHeight, gridWidth, gridHeight, pan, zoom, selection, layers, setLayers, addAction, activeLayer }) => {
-	const [dims, setDims] = React.useState<{ left: number, right: number, top: number, bottom: number }>(null);
-	const prevDims = React.useRef<{ left: number, right: number, top: number, bottom: number }>(null);
+	const [dims, setDims] = React.useState<Dimensions>(null);
+	const prevDims = React.useRef<Dimensions>(null);
 	const prevScaling = React.useRef<Point>(null);
 	const prevLayer = React.useRef<LayerData>(null);
 	const prevSelection = React.useRef<Set<number>>(null);
@@ -28,7 +28,7 @@ const SelectionRect: React.FC<SelectionProps> = React.memo(({ svgWidth, svgHeigh
 	if ((layers[activeLayer] != prevLayer.current || selection != prevSelection.current) && !isTransforming) {
 		const layer = layers[activeLayer];
 
-		const newDims = { left: Number.POSITIVE_INFINITY, right: Number.NEGATIVE_INFINITY, top: Number.POSITIVE_INFINITY, bottom: Number.NEGATIVE_INFINITY };
+		const newDims: Dimensions = { left: Number.POSITIVE_INFINITY, right: Number.NEGATIVE_INFINITY, top: Number.POSITIVE_INFINITY, bottom: Number.NEGATIVE_INFINITY };
 		for (const num of selection) {
 			const item = layer.points[num];
 

@@ -253,37 +253,11 @@ const VecDraw: React.FC<any> = () => {
 	};
 
 	const exportAsSdf = () => {
-		const canvas = document.createElement("canvas");
 
-		//calc canvas size
-		//TODO: move to a separate function
-		let minX = Number.POSITIVE_INFINITY;
-		let maxX = Number.NEGATIVE_INFINITY;
-		let minY = Number.POSITIVE_INFINITY;
-		let maxY = Number.NEGATIVE_INFINITY;
-		for (const layer of layers) {
-			for (const line of layer.lines) {
-				const halfThickness = 128;
-
-				const from = layer.points[line.from];
-				const to = layer.points[line.to];
-
-				minX = Math.min(minX, from.x - halfThickness, to.x - halfThickness);
-				maxX = Math.max(maxX, from.x + halfThickness, to.x + halfThickness);
-				minY = Math.min(minY, from.y - halfThickness, to.y - halfThickness);
-				maxY = Math.max(maxY, from.y + halfThickness, to.y + halfThickness);
-			}
-		}
-
-		canvas.width = maxX - minX;
-		canvas.height = maxY - minY;
-
-		const ctx = canvas.getContext("2d");
-		const imgData = ctx.createImageData(canvas.width, canvas.height, { colorSpace: "srgb" });
-
-		generateSdf(minX, minY, imgData.width, imgData.height, layers, imgData.data);
-
-		ctx.putImageData(imgData, 0, 0);
+		const sdf = new SDF(32, ["#000000"], SDF.rgbSeparator, 1);
+		sdf.setLayers(layers);
+		sdf.preprocess();
+		const canvas = sdf.generate(null);
 
 		const a = document.createElement("a");
 		a.download = "sdf.png";

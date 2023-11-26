@@ -19,8 +19,15 @@ interface OldShapeData {
 	lines: Array<OldLine>;
 }
 
+interface Dimensions {
+	left: number;
+	right: number;
+	top: number;
+	bottom: number;
+}
+
 const colorToRgb = (color: string): Array<number> => {
-	const colorRgb = Number.parseInt(color, 16);
+	const colorRgb = Number.parseInt(color.substring(1), 16);
 	return [colorRgb >> 16, (colorRgb >> 8) & 0xff, colorRgb & 0xff];
 }
 
@@ -71,6 +78,7 @@ const drawOntoCanvas = (canvas: HTMLCanvasElement, layers: Array<LayerData>, bgC
 			const from = layer.points[line.from];
 			const to = layer.points[line.to];
 
+			//FIXME: doesn't take into account that point coordinates will change
 			const minX = Math.min(from.x - halfThickness, to.x - halfThickness);
 			const maxX = Math.max(from.x + halfThickness, to.x + halfThickness);
 			const minY = Math.min(from.y - halfThickness, to.y - halfThickness);

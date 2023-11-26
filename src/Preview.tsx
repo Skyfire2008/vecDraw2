@@ -15,7 +15,7 @@ const Preview: React.FC<PreviewProps> = React.memo(({ layers, width, height, bgC
 	const canvasRef = React.useRef<HTMLCanvasElement>();
 
 	const dimensions = React.useMemo(() => {
-		const result = { left: Number.POSITIVE_INFINITY, right: Number.NEGATIVE_INFINITY, top: Number.POSITIVE_INFINITY, bottom: Number.NEGATIVE_INFINITY };
+		const result: Dimensions = { left: Number.POSITIVE_INFINITY, right: Number.NEGATIVE_INFINITY, top: Number.POSITIVE_INFINITY, bottom: Number.NEGATIVE_INFINITY };
 
 		for (const layer of layers) {
 			for (const line of layer.lines) {
