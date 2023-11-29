@@ -254,7 +254,7 @@ const VecDraw: React.FC<any> = () => {
 
 	const exportAsSdf = () => {
 
-		const sdf = new SDF(32, ["#000000"], SDF.rgbSeparator, 1);
+		const sdf = new SDF(32, ["#000000"], SDF.rgbSeparator, 2);
 		sdf.setLayers(layers);
 		sdf.preprocess();
 		const canvas = sdf.generate(null);

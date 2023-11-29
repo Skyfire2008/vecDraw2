@@ -1,6 +1,6 @@
 interface SdfLayerData {
 	lines: Array<SdfLineData>;
-	polygons: Array<Array<SdfLineData>>;
+	polygons: Array<Array<SdfPolyLineData>>;
 }
 
 interface SdfLineData {
@@ -10,6 +10,14 @@ interface SdfLineData {
 	len: number;
 	len2: number;
 	halfThickness: number;
+}
+
+interface SdfPolyLineData extends SdfLineData {
+	min: number;
+	max: number;
+	k: number;
+	b: number;
+	add: number;
 }
 
 //TODO: save steps that have already been completed
@@ -52,7 +60,7 @@ class SDF {
 	 * @param isLine 	is segment a line or polygon side?
 	 * @returns 
 	 */
-	public static makeLineData(from: Point, to: Point, thickness: number, isLine: boolean): SdfLineData {
+	private static makeLineData(from: Point, to: Point, thickness: number, isLine: boolean): SdfLineData {
 		const vec = Point.subtract(to, from);
 		const len2 = vec.x * vec.x + vec.y * vec.y;
 		const addPoint: PointLike = isLine ? { x: 0.5, y: 0.5 } : { x: 0, y: 0 };
@@ -66,13 +74,38 @@ class SDF {
 		};
 	}
 
+	private static makePolyLineData(from: Point, to: Point): SdfPolyLineData {
+		let min: number;
+		let max: number;
+		let k: number;
+		let add: number;
+
+		if (from.y < to.y) {
+			min = from.y;
+			max = to.y;
+			k = (to.x - from.x) / (to.y - from.y);
+			add = 1;
+		} else {
+			min = to.y;
+			max = from.y;
+			k = (from.x - to.x) / (from.y - to.y);
+			add = -1;
+		}
+
+		let b = from.x - from.y * k;
+
+		const result: SdfPolyLineData = Object.assign({ min, max, k, b, add }, SDF.makeLineData(from, to, 0, false));
+
+		return result;
+	}
+
 	/**
-	* Calculates the distance between line and segment
+	* Calculates the distance between point and segment
 	* @param point 	point to calculate distance to
 	* @param data 	precomputed segment data
 	* @returns 
 	*/
-	public static lineDistance = (point: PointLike, data: SdfLineData) => {
+	private static lineDistance = (point: PointLike, data: SdfLineData) => {
 		const ap = Point.subtract(point, data.from);
 		const projMult = Point.dot(ap, data.vec) / data.len2;
 
@@ -148,10 +181,11 @@ class SDF {
 					continue;
 				}
 
-				const polyData: Array<SdfLineData> = [];
+				const polyData: Array<SdfPolyLineData> = [];
 				for (let prev = 0; prev < polygon.points.length; prev++) {
+					//INFO: careful, don't mix indices in polygon and indices in layer point array
 					const next = (prev + 1) % polygon.points.length;
-					polyData.push(SDF.makeLineData(layer.points[prev], layer.points[next], 0, true));
+					polyData.push(SDF.makePolyLineData(layer.points[polygon.points[prev]], layer.points[polygon.points[next]]));
 				}
 
 				this.vecData[i].polygons.push(polyData);
@@ -169,6 +203,15 @@ class SDF {
 				right = Math.max(right, line.from.x + line.halfThickness, line.to.x + line.halfThickness);
 				top = Math.min(top, line.from.y - line.halfThickness, line.to.y - line.halfThickness);
 				bottom = Math.max(bottom, line.from.y + line.halfThickness, line.to.y + line.halfThickness);
+			}
+
+			for (const poly of channel.polygons) {
+				for (const line of poly) {
+					left = Math.min(left, line.from.x, line.to.x);
+					right = Math.max(right, line.from.x, line.to.x);
+					top = Math.min(top, line.from.y, line.to.y);
+					bottom = Math.max(bottom, line.from.y, line.to.y);
+				}
 			}
 		}
 
@@ -226,7 +269,32 @@ class SDF {
 								closest = Math.min(closest, dist);
 							}
 
-							//TODO: polygons here
+							//for every polygon...
+							for (const poly of channel.polygons) {
+
+								//first, check if point is inside polygon by intersecting a line towards +x from the point with every side
+								//and adding together the line windings
+								let windings = 0;
+								for (const line of poly) {
+									if (point.y > line.min && point.y < line.max) {
+										const intersection = line.k * point.y + line.b;
+										if (intersection > point.x) {
+											windings += line.add;
+										}
+									}
+								}
+								const mult = windings == 0 ? 1 : -1;
+
+								//then calculate the distance from polygon sides
+								let polyClosest = Number.POSITIVE_INFINITY;
+								for (const line of poly) {
+									//do not multiply with mult yet, cause if it's -1, it will take distance from furthest side
+									const dist = SDF.lineDistance(point, line);
+									polyClosest = Math.min(dist, polyClosest);
+								}
+
+								closest = Math.min(closest, mult * polyClosest);
+							}
 
 							//subtract, cause sdf typically have brightest colors inside of shapes
 							//while here it's the opposite since the distance is negative inside of them
