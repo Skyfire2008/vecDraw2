@@ -1,36 +1,39 @@
-class Pan implements Tool {
-	readonly name = "Pan";
-	readonly description = "Move the visible area";
-	private active = false;
-	private prevPan: Point;
+namespace tool {
 
-	public constructor() { }
+	export class Pan implements Tool {
+		readonly name = "Pan";
+		readonly description = "Move the visible area";
+		private active = false;
+		private prevPan: math.Point;
 
-	public onMouseDown(e: MyMouseEvent, ctx: AppContextProps) {
-		this.active = true;
-		this.prevPan = ctx.pan;
-	}
+		public constructor() { }
 
-	public onMouseMove(e: MyMouseEvent, ctx: AppContextProps) {
-		if (this.active) {
-			const result = new Point(this.prevPan.x + e.delta.x, this.prevPan.y + e.delta.y);
-			ctx.setPan(result);
+		public onMouseDown(e: MyMouseEvent, ctx: ui.AppContextProps) {
+			this.active = true;
+			this.prevPan = ctx.pan;
 		}
-	}
 
-	public onMouseUp(e: MyMouseEvent, ctx: AppContextProps) {
-		this.active = false;
-	}
+		public onMouseMove(e: MyMouseEvent, ctx: ui.AppContextProps) {
+			if (this.active) {
+				const result = new math.Point(this.prevPan.x + e.delta.x, this.prevPan.y + e.delta.y);
+				ctx.setPan(result);
+			}
+		}
 
-	/*public onPointClick(num: number) {
-		//do nothing
-	}*/
+		public onMouseUp(e: MyMouseEvent, ctx: ui.AppContextProps) {
+			this.active = false;
+		}
 
-	public onEnable(ctx: AppContextProps) {
-		//do nothing
-	}
+		/*public onPointClick(num: number) {
+			//do nothing
+		}*/
 
-	public onDisable(ctx: AppContextProps) {
-		//do nothing
+		public onEnable(ctx: ui.AppContextProps) {
+			//do nothing
+		}
+
+		public onDisable(ctx: ui.AppContextProps) {
+			//do nothing
+		}
 	}
 }

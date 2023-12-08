@@ -1,52 +1,55 @@
-//TODO: update for polygons
-class ChangeSelectionProperties implements Action {
+namespace action {
 
-	readonly description: Array<ActionKeyWord>;
-	readonly layerNum: number;
-	private selection: Set<number>;
-	private thickness: number;
-	private color: string;
+	//TODO: update for polygons
+	export class ChangeSelectionProperties implements Action {
 
-	private prevLines: Map<number, Line>;
+		readonly description: Array<ActionKeyWord>;
+		readonly layerNum: number;
+		private selection: Set<number>;
+		private thickness: number;
+		private color: string;
 
-	constructor(layerNum: number, selection: Set<number>, thickness: number, color: string) {
-		this.layerNum = layerNum;
-		this.selection = selection;
-		this.thickness = thickness;
-		this.color = color;
-		this.description = [`Changed selection properties`];
-	}
+		private prevLines: Map<number, types.Line>;
 
-	public do(ctx: AppContextProps): void {
-		const layer = ctx.layers[this.layerNum];
+		constructor(layerNum: number, selection: Set<number>, thickness: number, color: string) {
+			this.layerNum = layerNum;
+			this.selection = selection;
+			this.thickness = thickness;
+			this.color = color;
+			this.description = [`Changed selection properties`];
+		}
 
-		this.prevLines = new Map<number, Line>();
+		public do(ctx: ui.AppContextProps): void {
+			const layer = ctx.layers[this.layerNum];
 
-		for (let i = 0; i < layer.lines.length; i++) {
-			const line = layer.lines[i];
-			if (this.selection.has(line.from) && this.selection.has(line.to)) {
-				this.prevLines.set(i, line);
-				layer.lines[i] = {
-					from: line.from,
-					to: line.to,
-					thickness: this.thickness != null ? this.thickness : line.thickness,
-					color: this.color != null ? this.color : line.color
-				};
+			this.prevLines = new Map<number, types.Line>();
+
+			for (let i = 0; i < layer.lines.length; i++) {
+				const line = layer.lines[i];
+				if (this.selection.has(line.from) && this.selection.has(line.to)) {
+					this.prevLines.set(i, line);
+					layer.lines[i] = {
+						from: line.from,
+						to: line.to,
+						thickness: this.thickness != null ? this.thickness : line.thickness,
+						color: this.color != null ? this.color : line.color
+					};
+				}
 			}
+
+			ctx.layers[this.layerNum] = { lines: layer.lines, polygons: layer.polygons, points: layer.points };
+			ctx.setLayers(ctx.layers.slice(0));
 		}
 
-		ctx.layers[this.layerNum] = { lines: layer.lines, polygons: layer.polygons, points: layer.points };
-		ctx.setLayers(ctx.layers.slice(0));
-	}
+		public undo(ctx: ui.AppContextProps): void {
+			const layer = ctx.layers[this.layerNum];
 
-	public undo(ctx: AppContextProps): void {
-		const layer = ctx.layers[this.layerNum];
+			for (const [ind, line] of this.prevLines) {
+				layer.lines[ind] = line;
+			}
 
-		for (const [ind, line] of this.prevLines) {
-			layer.lines[ind] = line;
+			ctx.layers[this.layerNum] = { lines: layer.lines, polygons: layer.polygons, points: layer.points };
+			ctx.setLayers(ctx.layers.slice(0));
 		}
-
-		ctx.layers[this.layerNum] = { lines: layer.lines, polygons: layer.polygons, points: layer.points };
-		ctx.setLayers(ctx.layers.slice(0));
 	}
 }

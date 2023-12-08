@@ -12,12 +12,12 @@ interface KdLine {
 }
 
 class KdNode {
-	point: PointLike; //assume that point is never null
+	point: math.PointLike; //assume that point is never null
 	split: Split;
 	kid0: KdNode;
 	kid1: KdNode;
 
-	constructor(xSorted: Array<PointLike>, ySorted: Array<PointLike>, defaultSplit: Split) {
+	constructor(xSorted: Array<math.PointLike>, ySorted: Array<math.PointLike>, defaultSplit: Split) {
 		const num = xSorted.length;
 
 		if (num == 1) { // if array has only one element, this is a leaf node
@@ -29,10 +29,10 @@ class KdNode {
 
 			let median = Math.floor(num / 2);
 
-			let xSorted0: Array<PointLike> = [];
-			let xSorted1: Array<PointLike> = [];
-			let ySorted0: Array<PointLike> = [];
-			let ySorted1: Array<PointLike> = [];
+			let xSorted0: Array<math.PointLike> = [];
+			let xSorted1: Array<math.PointLike> = [];
+			let ySorted0: Array<math.PointLike> = [];
+			let ySorted1: Array<math.PointLike> = [];
 
 			if (xDist > yDist) {
 				this.split = Split.Horizontal;
@@ -127,7 +127,7 @@ class KdNode {
 		}
 	}
 
-	public add(point: PointLike) {
+	public add(point: math.PointLike) {
 		if (
 			(this.split == Split.Horizontal && point.x > this.point.x) ||
 			(this.split == Split.Vertical && point.y > this.point.y)
@@ -146,11 +146,11 @@ class KdNode {
 		}
 	}
 
-	public getLines(pan: PointLike, zoom: number, minX: number, minY: number, maxX: number, maxY: number): Array<KdLine> {
+	public getLines(pan: math.PointLike, zoom: number, minX: number, minY: number, maxX: number, maxY: number): Array<KdLine> {
 		let result: Array<KdLine> = [];
 
 		if (this.split == Split.Horizontal) {
-			const p = convertCoords(this.point, pan, zoom, 1);
+			const p = ui.convertCoords(this.point, pan, zoom, 1);
 			result.push({ x1: p.x, x2: p.x, y1: minY, y2: maxY });
 
 			if (this.kid0 != null) {
@@ -160,7 +160,7 @@ class KdNode {
 				result = result.concat(this.kid1.getLines(pan, zoom, p.x, minY, maxX, maxY));
 			}
 		} else if (this.split == Split.Vertical) {
-			const p = convertCoords(this.point, pan, zoom, 1);
+			const p = ui.convertCoords(this.point, pan, zoom, 1);
 			result.push({ x1: minX, x2: maxX, y1: p.y, y2: p.y });
 
 			if (this.kid0 != null) {
@@ -174,7 +174,7 @@ class KdNode {
 		return result;
 	}
 
-	public queryRect(x0: number, y0: number, x1: number, y1: number, result: Array<PointLike>): Array<PointLike> {
+	public queryRect(x0: number, y0: number, x1: number, y1: number, result: Array<math.PointLike>): Array<math.PointLike> {
 		if (x0 < this.point.x && x1 >= this.point.x && y0 < this.point.y && y1 >= this.point.y) {
 			result.push(this.point);
 		}
@@ -202,7 +202,7 @@ class KdNode {
 class KdTree {
 	root: KdNode;
 
-	constructor(points: Array<PointLike>) {
+	constructor(points: Array<math.PointLike>) {
 		const xSorted = points.slice(0).sort((a, b) => {
 			const diff = a.x - b.x;
 			return diff != 0 ? diff : a.y - b.y;
@@ -217,7 +217,7 @@ class KdTree {
 		}
 	}
 
-	public addPoint(point: PointLike) {
+	public addPoint(point: math.PointLike) {
 		if (this.root != null) {
 			this.root.add(point);
 		} else {
@@ -225,11 +225,11 @@ class KdTree {
 		}
 	}
 
-	public getLines(pan: PointLike, zoom: number, width: number, height: number): Array<KdLine> {
+	public getLines(pan: math.PointLike, zoom: number, width: number, height: number): Array<KdLine> {
 		return this.root.getLines(pan, zoom, 0, 0, width, height);
 	}
 
-	public queryRect(x0: number, y0: number, x1: number, y1: number): Array<PointLike> {
+	public queryRect(x0: number, y0: number, x1: number, y1: number): Array<math.PointLike> {
 		if (this.root == null) {
 			return [];
 		} else {
