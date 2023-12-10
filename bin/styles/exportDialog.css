@@ -1,0 +1,48 @@
+.export-dialog {
+	padding: 10px;
+}
+
+.export-block {
+	padding: 0px 20px 10px 20px;
+	display: flex;
+	flex-direction: column;
+}
+
+.export-block:first-child {
+	border-right: 1px solid lightgray;
+}
+
+.export-block :last-child {
+	margin-top: auto;
+}
+
+.export-title {
+	font-size: x-large;
+	font-weight: bold;
+	text-align: center;
+	margin: 0px 0px 20px 0px;
+}
+
+.export-block .input-wrapper {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.export-block>div {
+	margin: 0px 0px 10px 0px;
+}
+
+.input-wrapper label {
+	font-weight: bold;
+	margin: 0px 20px 0px 0px;
+}
+
+.input-label {
+	font-weight: bold;
+	margin: 0px 20px 0px 0px;
+}
+
+.input-wrapper input {
+	text-align: right;
+}

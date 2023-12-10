@@ -55,6 +55,32 @@ namespace util {
 		}
 
 		/**
+		 * Separates colors by RGB value, if color value not found, returns -1
+		 * @param color input colors as string
+		 * @param targets array of target colors as [R, G, B] array
+		 * @returns target index
+		 */
+		public static strictRgbSeparator(color: string, targets: Array<Array<number>>): number {
+			const colorRgb = colorToRgb(color);
+
+			for (let i = 0; i < targets.length; i++) {
+				const targetColor = targets[i];
+
+				for (let j = 0; j < 3; j++) {
+					//if a single color channel is different, skip
+					if (colorRgb[j] != targetColor[j]) {
+						continue;
+					}
+				}
+
+				//if never skipped, return index of target color
+				return i;
+			}
+
+			return -1;
+		}
+
+		/**
 		 * Generates precomputed segment data
 		 * @param from 		segment starting point
 		 * @param to 		segment ending point

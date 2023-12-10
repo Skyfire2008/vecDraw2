@@ -2,12 +2,13 @@
 	"compilerOptions": {
 		"moduleResolution": "node",
 		"outDir": "bin",
-		"target": "ES6",
+		"target": "ES2020",
 		"rootDir": "./src/",
 		"esModuleInterop": true,
 		"module": "None",
 		"jsx": "react",
-		"allowUmdGlobalAccess": true
+		"allowUmdGlobalAccess": true,
+		"strictBindCallApply": true
 	},
 	"compileOnSave": true,
 	"exclude": [

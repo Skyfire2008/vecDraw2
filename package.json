@@ -5,7 +5,8 @@
 		"react": "latest",
 		"react-dom": "latest",
 		"@types/react": "latest",
-		"@types/react-dom": "latest"
+		"@types/react-dom": "latest",
+		"typescript": "latest"
 	},
 	"dependencies": {
 		"react": "latest",

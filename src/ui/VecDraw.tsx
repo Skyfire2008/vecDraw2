@@ -68,6 +68,8 @@ namespace ui {
 		const forcePan = React.useRef(false);
 		const tempGroupRef = React.useRef<SVGGElement>(null);
 
+		const [exportDialogShown, setExportDialogShown] = React.useState(false);
+
 		const ctx = {
 			gridSettings,
 			pan,
@@ -273,12 +275,14 @@ namespace ui {
 		return (
 			<div>
 				<AppContext.Provider value={ctx}>
+					<ExportDialog open={exportDialogShown} onClose={() => setExportDialogShown(false)}></ExportDialog>
 					<div className="line panel">
 						<div>
 							<label>Load file:</label>
 							<input type="file" accept=".json" onChange={onSelectFile}></input>
 						</div>
 						<button onClick={saveFile}>Save file</button>
+						<button onClick={() => setExportDialogShown(true)}>Export as...</button>
 						<button onClick={exportAsPng}>Export as PNG</button>
 						<button onClick={exportAsSdf}>Export as SDF</button>
 						<div>
