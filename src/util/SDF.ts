@@ -66,15 +66,19 @@ namespace util {
 			for (let i = 0; i < targets.length; i++) {
 				const targetColor = targets[i];
 
+				let found = true;
 				for (let j = 0; j < 3; j++) {
 					//if a single color channel is different, skip
 					if (colorRgb[j] != targetColor[j]) {
-						continue;
+						found = false;
+						break;
 					}
 				}
 
 				//if never skipped, return index of target color
-				return i;
+				if (found) {
+					return i;
+				}
 			}
 
 			return -1;
@@ -251,7 +255,7 @@ namespace util {
 			this.dims = { left, right, top, bottom };
 		}
 
-		public generate(callback: (state: string, ratio: number) => void): HTMLCanvasElement {
+		public generate(): HTMLCanvasElement {
 			const canvas = document.createElement("canvas");
 
 			const width = this.dims.right - this.dims.left + this.spread * 2;
@@ -336,7 +340,6 @@ namespace util {
 						collector = Math.round(255 * (collector + this.spread) / (2 * this.spread)); //map to [0, 255]
 
 						imgData.data[(y * width + x) * 4 + channelNum] = collector;
-						imgData.data[(y * width + x) * 4 + 3] = 255; //TODO: sets alpha to 255, remove later
 					}
 				}
 			}

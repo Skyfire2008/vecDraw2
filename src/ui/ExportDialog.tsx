@@ -2,18 +2,21 @@ namespace ui {
 
 	interface ExportDialogProps {
 		open: boolean;
+		layers: Array<types.LayerData>;
+		bgColor: string;
 		onClose: () => void;
 	}
 
-	export const ExportDialog: React.FC<ExportDialogProps> = ({ open, onClose }) => {
+	export const ExportDialog: React.FC<ExportDialogProps> = ({ open, layers, bgColor, onClose }) => {
 
 		const dialogRef = React.useRef<HTMLDialogElement>();
+		const [blocked, setBlocked] = React.useState(false);
 
 		//PNG PROPERTIES
 		const [scale, setScale] = React.useState(1);
 
 		//SDF PROPERTIES
-		const [spread, setSpread] = React.useState(32);
+		const [spread, setSpread] = React.useState(8);
 		const [sampleMult, setSampleMult] = React.useState(1);
 		const [targetColors, setTargetColors] = React.useState(["#ff0000", "#00ff00", "#0000ff", "#ffffff"]);
 		const [strict, setStrict] = React.useState(false);
@@ -32,6 +35,43 @@ namespace ui {
 			setTargetColors(targetColors.slice(0));
 		}
 
+		const exportAsPng = () => {
+			setBlocked(true);
+
+			const canvas = document.createElement("canvas");
+			util.drawOntoCanvas(canvas, layers, bgColor, scale);
+
+			const a = document.createElement("a");
+			a.download = "export.png";
+			canvas.toBlob((blob) => {
+				a.href = URL.createObjectURL(blob);
+				a.addEventListener("click", (e) => setTimeout(() => URL.revokeObjectURL(a.href), 1000));
+				a.click();
+				setBlocked(false);
+			});
+		};
+
+		const exportAsSdf = () => {
+
+			new Promise<void>((resolve, reject) => {
+				setBlocked(true);
+
+				const sdf = new util.SDF(spread, targetColors, strict ? util.SDF.strictRgbSeparator : util.SDF.rgbSeparator, sampleMult);
+				sdf.setLayers(layers);
+				sdf.preprocess();
+				const canvas = sdf.generate();
+
+				const a = document.createElement("a");
+				a.download = "sdf.png";
+				canvas.toBlob((blob) => {
+					a.href = URL.createObjectURL(blob);
+					a.addEventListener("click", (e) => setTimeout(() => URL.revokeObjectURL(a.href), 1000));
+					a.click();
+					resolve();
+				});
+			}).then(() => setBlocked(false));
+		};
+
 		return (
 			<dialog className="export-dialog" ref={dialogRef}>
 				<div className="line">
@@ -40,12 +80,12 @@ namespace ui {
 						<div className="input-wrapper">
 							<label>Scale:</label>
 							<div className="line">
-								<input type="number" min="1" step="0.5"></input>
+								<input type="number" min="1" step="0.5" value={scale} onChange={(e) => setScale(e.target.valueAsNumber)}></input>
 								<Tooltip text="Scale of resulting image."></Tooltip>
 							</div>
 						</div>
 						<div>
-							<button>Export and save as PNG</button>
+							<button onClick={exportAsPng} disabled={blocked}>Export and save as PNG</button>
 						</div>
 					</div>
 					<div className="export-block">
@@ -54,7 +94,7 @@ namespace ui {
 							<label>Spread:</label>
 							<div className="line">
 								<input type="number" min="1" max="255" step="1" value={spread} onChange={(e) => setSpread(Number.parseInt(e.target.value))}></input>
-								<Tooltip text="Pixel distance from shape borders within which the SDF will be calculated."></Tooltip>
+								<Tooltip text="Pixel distance from shape borders within which the SDF will be calculated. Lower values result in higher smoothing."></Tooltip>
 							</div>
 						</div>
 						<div className="input-wrapper">
@@ -66,7 +106,7 @@ namespace ui {
 						</div>
 						<div>
 							<div className="input-wrapper">
-								<div className="input-label">Color - channel binding::</div>
+								<div className="input-label">Color - channel binding:</div>
 								<Tooltip text="
 									SDF is exported as a 4 color channel PNG image, so it's possible to calculate and store 4 different SDFs, so as to render the SDF with more than one color at runtime.
 									Use the provided color pickers to select which color gets assigned to which channel.
@@ -96,15 +136,13 @@ namespace ui {
 								<Tooltip text="If a line or polygon's color is not bound to a channel, it will be ignored. Otherwise it will be assigned to the channel with closest color."></Tooltip>
 							</div>
 						</div>
-						<div>
-							<button>Export and save SDF</button>
-						</div>
-						<div>
+						<div className="export-buttons">
+							<button onClick={exportAsSdf} disabled={blocked}>Export and save SDF</button>
 							<button>Save descriptor</button>
 						</div>
 					</div>
 				</div>
-				<button onClick={onCancel}>Cancel</button>
+				<button onClick={onCancel} disabled={blocked}>Cancel</button>
 			</dialog >
 		);
 	};

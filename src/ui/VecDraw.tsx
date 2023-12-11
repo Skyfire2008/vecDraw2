@@ -54,7 +54,6 @@ namespace ui {
 		const [layers, setLayers] = React.useState<Array<types.LayerData>>([{ points: [], lines: [], polygons: [] }]);
 		const [activeLayer, setActiveLayer] = React.useState<number>(0);
 		const [actions, setActions] = React.useState<Array<action.Action>>([]);
-		const [exportScale, setExportScale] = React.useState(1);
 
 		const [lineColor, setLineColor] = React.useState("#000000");
 		const [lineThickness, setLineThickness] = React.useState(1);
@@ -243,39 +242,10 @@ namespace ui {
 			a.click();
 		};
 
-		const exportAsPng = () => {
-			const canvas = document.createElement("canvas");
-			util.drawOntoCanvas(canvas, layers, gridSettings.bgColor, exportScale);
-
-			const a = document.createElement("a");
-			a.download = "export.png";
-			canvas.toBlob((blob) => {
-				a.href = URL.createObjectURL(blob);
-				a.addEventListener("click", (e) => setTimeout(() => URL.revokeObjectURL(a.href), 1000));
-				a.click();
-			});
-		};
-
-		const exportAsSdf = () => {
-
-			const sdf = new util.SDF(16, ["#000000"], util.SDF.rgbSeparator, 4);
-			sdf.setLayers(layers);
-			sdf.preprocess();
-			const canvas = sdf.generate(null);
-
-			const a = document.createElement("a");
-			a.download = "sdf.png";
-			canvas.toBlob((blob) => {
-				a.href = URL.createObjectURL(blob);
-				a.addEventListener("click", (e) => setTimeout(() => URL.revokeObjectURL(a.href), 1000));
-				a.click();
-			});
-		};
-
 		return (
 			<div>
 				<AppContext.Provider value={ctx}>
-					<ExportDialog open={exportDialogShown} onClose={() => setExportDialogShown(false)}></ExportDialog>
+					<ExportDialog open={exportDialogShown} layers={layers} bgColor={gridSettings.bgColor} onClose={() => setExportDialogShown(false)}></ExportDialog>
 					<div className="line panel">
 						<div>
 							<label>Load file:</label>
@@ -283,12 +253,6 @@ namespace ui {
 						</div>
 						<button onClick={saveFile}>Save file</button>
 						<button onClick={() => setExportDialogShown(true)}>Export as...</button>
-						<button onClick={exportAsPng}>Export as PNG</button>
-						<button onClick={exportAsSdf}>Export as SDF</button>
-						<div>
-							<label> Export scale:</label>
-							<input type="number" min="1" step="0.5" value={exportScale} onChange={(e) => setExportScale(e.target.valueAsNumber)}></input>
-						</div>
 					</div>
 
 					<div className="line">
