@@ -2,13 +2,16 @@
 	"name": "vec_draw_2",
 	"version": "0.0.1",
 	"devDependencies": {
-		"react": "latest",
-		"react-dom": "latest",
 		"@types/react": "latest",
 		"@types/react-dom": "latest",
-		"typescript": "latest"
+		"react": "latest",
+		"react-dom": "latest",
+		"typescript": "latest",
+		"@pdf-lib/upng": "^1.0.1"
 	},
 	"dependencies": {
+		"@pdf-lib/upng": "^1.0.1",
+		"pako": "^2.1.0",
 		"react": "latest",
 		"react-dom": "latest"
 	},

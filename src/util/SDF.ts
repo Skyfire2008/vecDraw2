@@ -255,18 +255,13 @@ namespace util {
 			this.dims = { left, right, top, bottom };
 		}
 
-		public generate(): HTMLCanvasElement {
-			const canvas = document.createElement("canvas");
-
+		public generate(): ArrayBuffer {
 			const width = this.dims.right - this.dims.left + this.spread * 2;
 			const height = this.dims.bottom - this.dims.top + this.spread * 2;
 			const startX = this.dims.left - this.spread;
 			const startY = this.dims.top - this.spread;
 
-			canvas.width = width;
-			canvas.height = height;
-			const ctx = canvas.getContext("2d");
-			const imgData = ctx.createImageData(canvas.width, canvas.height, { colorSpace: "srgb" });
+			const imgData = new Uint8ClampedArray(4 * width * height);
 
 			const sampleStep = 1 / this.sampleMult;
 			const halfSampleStep = sampleStep / 2;
@@ -339,13 +334,12 @@ namespace util {
 						collector = Math.min(this.spread, collector);
 						collector = Math.round(255 * (collector + this.spread) / (2 * this.spread)); //map to [0, 255]
 
-						imgData.data[(y * width + x) * 4 + channelNum] = collector;
+						imgData[(y * width + x) * 4 + channelNum] = collector;
 					}
 				}
 			}
 
-			ctx.putImageData(imgData, 0, 0);
-			return canvas;
+			return UPNG.encodeLL([imgData], width, height, 3, 1, 8);
 		}
 	}
 }

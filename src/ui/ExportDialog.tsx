@@ -53,23 +53,20 @@ namespace ui {
 
 		const exportAsSdf = () => {
 
-			new Promise<void>((resolve, reject) => {
-				setBlocked(true);
+			setBlocked(true);
 
-				const sdf = new util.SDF(spread, targetColors, strict ? util.SDF.strictRgbSeparator : util.SDF.rgbSeparator, sampleMult);
-				sdf.setLayers(layers);
-				sdf.preprocess();
-				const canvas = sdf.generate();
+			const sdf = new util.SDF(spread, targetColors, strict ? util.SDF.strictRgbSeparator : util.SDF.rgbSeparator, sampleMult);
+			sdf.setLayers(layers);
+			sdf.preprocess();
+			const buffer = sdf.generate();
 
-				const a = document.createElement("a");
-				a.download = "sdf.png";
-				canvas.toBlob((blob) => {
-					a.href = URL.createObjectURL(blob);
-					a.addEventListener("click", (e) => setTimeout(() => URL.revokeObjectURL(a.href), 1000));
-					a.click();
-					resolve();
-				});
-			}).then(() => setBlocked(false));
+			const a = document.createElement("a");
+			a.download = "sdf.png";
+			a.href = URL.createObjectURL(new Blob([buffer]));
+			a.addEventListener("click", (e) => setTimeout(() => URL.revokeObjectURL(a.href), 1000));
+			a.click();
+
+			setBlocked(false);
 		};
 
 		return (
