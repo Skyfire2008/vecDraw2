@@ -103,6 +103,7 @@ input[type=text] {
 }
 
 .tooltip {
+	position: relative;
 	border: 1px solid grey;
 	background-color: midnightblue;
 	text-align: center;
@@ -114,7 +115,7 @@ input[type=text] {
 }
 
 .tooltip .tooltip-text {
-	width: 50%;
+	width: 250px;
 	visibility: hidden;
 	background-color: white;
 	color: black;
@@ -126,10 +127,20 @@ input[type=text] {
 	z-index: 1;
 	right: 0px;
 	box-shadow: 0px 0px 5px mediumaquamarine;
-
-	/* Fade in tooltip - takes 1 second to go from 0% to 100% opac: */
 	opacity: 0;
-	transition: opacity 1s;
+	transition: opacity 0.5s;
+}
+
+.tooltip .tooltip-text.right {
+	left: 100%;
+}
+
+.tooltip .tooltip-text.centerX {
+	left: -125px;
+}
+
+.tooltip .tooltip-text.top {
+	bottom: 100%;
 }
 
 .tooltip:hover .tooltip-text {

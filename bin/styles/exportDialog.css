@@ -1,4 +1,12 @@
 .export-dialog {
+	padding: 0px;
+}
+
+.export-dialog::backdrop {
+	background: #00000000;
+}
+
+.export-wrapper {
 	padding: 10px;
 }
 
@@ -56,4 +64,26 @@
 .export-buttons>* {
 	margin-top: 10px;
 	margin: 10px 0px 0px 0px;
+}
+
+.descButtonGlow {
+	border: 5px solid;
+	animation-name: descButtonGlow;
+	animation-duration: 1s;
+	animation-iteration-count: infinite;
+	animation-timing-function: cubic-bezier(0.6, -0.28, 0.74, 0.05);
+}
+
+@keyframes descButtonGlow {
+	0% {
+		border-color: red;
+	}
+
+	50% {
+		border-color: transparent;
+	}
+
+	100% {
+		border-color: red;
+	}
 }

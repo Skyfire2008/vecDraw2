@@ -20,6 +20,8 @@ namespace ui {
 		const [sampleMult, setSampleMult] = React.useState(1);
 		const [targetColors, setTargetColors] = React.useState(["#ff0000", "#00ff00", "#0000ff", "#ffffff"]);
 		const [strict, setStrict] = React.useState(false);
+		const [descriptor, setDescriptor] = React.useState<util.SdfDescriptor>(null);
+		const [descSaved, setDescSaved] = React.useState(false);
 
 		if (open) {
 			dialogRef.current.showModal();
@@ -58,7 +60,9 @@ namespace ui {
 			const sdf = new util.SDF(spread, targetColors, strict ? util.SDF.strictRgbSeparator : util.SDF.rgbSeparator, sampleMult);
 			sdf.setLayers(layers);
 			sdf.preprocess();
-			const buffer = sdf.generate();
+			const { buf: buffer, desc } = sdf.generate();
+			setDescriptor(desc);
+			setDescSaved(false);
 
 			const a = document.createElement("a");
 			a.download = "sdf.png";
@@ -69,77 +73,91 @@ namespace ui {
 			setBlocked(false);
 		};
 
+		const saveDesc = () => {
+			const a = document.createElement("a");
+			a.download = "descriptor.json";
+			a.href = URL.createObjectURL(new Blob([JSON.stringify(descriptor)]));
+			a.addEventListener("click", (e) => setTimeout(() => URL.revokeObjectURL(a.href), 1000));
+			a.click();
+			setDescSaved(true);
+		}
+
 		return (
-			<dialog className="export-dialog" ref={dialogRef}>
-				<div className="line">
-					<div className="export-block">
-						<div className="export-title">Export as PNG</div>
-						<div className="input-wrapper">
-							<label>Scale:</label>
-							<div className="line">
-								<input type="number" min="1" step="0.5" value={scale} onChange={(e) => setScale(e.target.valueAsNumber)}></input>
-								<Tooltip text="Scale of resulting image."></Tooltip>
-							</div>
-						</div>
-						<div>
-							<button onClick={exportAsPng} disabled={blocked}>Export and save as PNG</button>
-						</div>
-					</div>
-					<div className="export-block">
-						<div className="export-title">Export as SDF</div>
-						<div className="input-wrapper">
-							<label>Spread:</label>
-							<div className="line">
-								<input type="number" min="1" max="255" step="1" value={spread} onChange={(e) => setSpread(Number.parseInt(e.target.value))}></input>
-								<Tooltip text="Pixel distance from shape borders within which the SDF will be calculated. Lower values result in higher smoothing."></Tooltip>
-							</div>
-						</div>
-						<div className="input-wrapper">
-							<label>Sample multiplier:</label>
-							<div className="line">
-								<input type="number" min="1" step="1" value={sampleMult} onChange={(e) => setSampleMult(Number.parseInt(e.target.value))}></input>
-								<Tooltip text="Amount of samples taken per pixel per axis to calculate the distance from shape border."></Tooltip>
-							</div>
-						</div>
-						<div>
+			<dialog className="export-dialog" ref={dialogRef} onClick={onCancel}>
+				<div className="export-wrapper" onClick={(e) => { e.stopPropagation() }}>{/* stop propagation so that click event works normally inside dialog, but cancels when clicking outside */}
+					<div className="line">
+						<div className="export-block">
+							<div className="export-title">Export as PNG</div>
 							<div className="input-wrapper">
-								<div className="input-label">Color - channel binding:</div>
-								<Tooltip text="
+								<label>Scale:</label>
+								<div className="line">
+									<input type="number" min="1" step="0.5" value={scale} onChange={(e) => setScale(e.target.valueAsNumber)}></input>
+									<Tooltip text="Scale of resulting image." extraClasses="centerX"></Tooltip>
+								</div>
+							</div>
+							<div>
+								<button onClick={exportAsPng} disabled={blocked}>Export and save as PNG</button>
+							</div>
+						</div>
+						<div className="export-block">
+							<div className="export-title">Export as SDF</div>
+							<div className="input-wrapper">
+								<label>Spread:</label>
+								<div className="line">
+									<input type="number" min="1" max="255" step="1" value={spread} onChange={(e) => setSpread(Number.parseInt(e.target.value))}></input>
+									<Tooltip text="Pixel distance from shape borders within which the SDF will be calculated. Lower values result in higher smoothing."></Tooltip>
+								</div>
+							</div>
+							<div className="input-wrapper">
+								<label>Sample multiplier:</label>
+								<div className="line">
+									<input type="number" min="1" step="1" value={sampleMult} onChange={(e) => setSampleMult(Number.parseInt(e.target.value))}></input>
+									<Tooltip text="Amount of samples taken per pixel per axis to calculate the distance from shape border."></Tooltip>
+								</div>
+							</div>
+							<div>
+								<div className="input-wrapper">
+									<div className="input-label">Color - channel binding:</div>
+									<Tooltip text="
 									SDF is exported as a 4 color channel PNG image, so it's possible to calculate and store 4 different SDFs, so as to render the SDF with more than one color at runtime.
 									Use the provided color pickers to select which color gets assigned to which channel.
 								"></Tooltip>
+								</div>
+								<div>
+									<label className="input-label">R:</label>
+									<input type="color" value={targetColors[0]} onChange={setColor.bind(null, 0)}></input>
+								</div>
+								<div>
+									<label className="input-label">G:</label>
+									<input type="color" value={targetColors[1]} onChange={setColor.bind(null, 1)}></input>
+								</div>
+								<div>
+									<label className="input-label">B:</label>
+									<input type="color" value={targetColors[2]} onChange={setColor.bind(null, 2)}></input>
+								</div>
+								<div>
+									<label className="input-label">A:</label>
+									<input type="color" value={targetColors[3]} onChange={setColor.bind(null, 3)}></input>
+								</div>
 							</div>
-							<div>
-								<label className="input-label">R:</label>
-								<input type="color" value={targetColors[0]} onChange={setColor.bind(null, 0)}></input>
+							<div className="input-wrapper">
+								<label>Ignore other colors:</label>
+								<div className="line">
+									<input type="checkbox" checked={strict} onChange={(e) => setStrict(e.target.checked)}></input>
+									<Tooltip text="If a line or polygon's color is not bound to a channel, it will be ignored. Otherwise it will be assigned to the channel with closest color."></Tooltip>
+								</div>
 							</div>
-							<div>
-								<label className="input-label">G:</label>
-								<input type="color" value={targetColors[1]} onChange={setColor.bind(null, 1)}></input>
+							<div className="export-buttons">
+								<button onClick={exportAsSdf} disabled={blocked}>Export and save SDF</button>
+								<div className="line">
+									<button onClick={saveDesc} disabled={blocked || descriptor == null} className={descriptor != null && !descSaved ? "descButtonGlow" : ""}>Save descriptor</button>
+									<Tooltip text={"Descriptor is a json file saving extra data such as color mapping, origin point location, etc."} extraClasses="top centerX"></Tooltip>
+								</div>
 							</div>
-							<div>
-								<label className="input-label">B:</label>
-								<input type="color" value={targetColors[2]} onChange={setColor.bind(null, 2)}></input>
-							</div>
-							<div>
-								<label className="input-label">A:</label>
-								<input type="color" value={targetColors[3]} onChange={setColor.bind(null, 3)}></input>
-							</div>
-						</div>
-						<div className="input-wrapper">
-							<label>Ignore other colors:</label>
-							<div className="line">
-								<input type="checkbox" checked={strict} onChange={(e) => setStrict(e.target.checked)}></input>
-								<Tooltip text="If a line or polygon's color is not bound to a channel, it will be ignored. Otherwise it will be assigned to the channel with closest color."></Tooltip>
-							</div>
-						</div>
-						<div className="export-buttons">
-							<button onClick={exportAsSdf} disabled={blocked}>Export and save SDF</button>
-							<button>Save descriptor</button>
 						</div>
 					</div>
+					<button onClick={onCancel} disabled={blocked}>Cancel</button>
 				</div>
-				<button onClick={onCancel} disabled={blocked}>Cancel</button>
 			</dialog >
 		);
 	};

@@ -22,6 +22,13 @@ namespace util {
 		add: number;
 	}
 
+	export interface SdfDescriptor {
+		originX: number;
+		originY: number;
+		spread: number;
+		colors: Array<Array<number>>;
+	}
+
 	//TODO: save steps that have already been completed
 	export class SDF {
 
@@ -139,12 +146,15 @@ namespace util {
 		*/
 		private static lineDistance = (point: math.PointLike, data: SdfLineData) => {
 			const ap = math.Point.subtract(point, data.from);
-			const projMult = math.Point.dot(ap, data.vec) / data.len2;
+			let projMult = math.Point.dot(ap, data.vec) / data.len2;
+			if (isNaN(projMult)) {//division by 0
+				projMult = 1;
+			}
 
 			let dist = 0;
-			if (projMult < 0) {
+			if (projMult <= 0) {
 				dist = math.Point.distance(data.from, point);
-			} else if (projMult > 1) {
+			} else if (projMult >= 1) {
 				dist = math.Point.distance(data.to, point);
 			} else {
 				const segPos = math.Point.scale(data.vec, projMult);
@@ -255,7 +265,7 @@ namespace util {
 			this.dims = { left, right, top, bottom };
 		}
 
-		public generate(): ArrayBuffer {
+		public generate(): { buf: ArrayBuffer, desc: SdfDescriptor } {
 			const width = this.dims.right - this.dims.left + this.spread * 2;
 			const height = this.dims.bottom - this.dims.top + this.spread * 2;
 			const startX = this.dims.left - this.spread;
@@ -339,7 +349,14 @@ namespace util {
 				}
 			}
 
-			return UPNG.encodeLL([imgData], width, height, 3, 1, 8);
+			const buf = UPNG.encodeLL([imgData], width, height, 3, 1, 8);
+			const desc: SdfDescriptor = {
+				originX: -startX,
+				originY: -startY,
+				spread: this.spread,
+				colors: this.targetColors
+			};
+			return { buf, desc };
 		}
 	}
 }
